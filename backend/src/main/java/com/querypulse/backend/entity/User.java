@@ -6,6 +6,8 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.querypulse.backend.enums.Role;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -34,6 +36,12 @@ public class User {
     private String passwordHash;
 
     private String phoneNumber;
+
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+
+     @Builder.Default
+     private Role role = Role.USER;
 
    @Builder.Default
 private Boolean isActive = true;

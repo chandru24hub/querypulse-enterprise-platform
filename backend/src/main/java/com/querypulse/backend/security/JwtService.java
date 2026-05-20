@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.function.Function;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Service
 public class JwtService {
 
@@ -19,23 +22,32 @@ public class JwtService {
     @Value("${jwt.expiration}")
     private long jwtExpiration;
 
-    public String generateToken(String email) {
+    public String generateToken(
+        String email,
+        String role
+) {
 
-        return Jwts.builder()
-                .subject(email)
-                .issuedAt(new Date())
-                .expiration(
-                        new Date(
-                                System.currentTimeMillis()
-                                        + jwtExpiration
-                        )
-                )
-                .signWith(
-                        SignatureAlgorithm.HS256,
-                        secretKey
-                )
-                .compact();
-    }
+    Map<String, Object> claims =
+            new HashMap<>();
+
+    claims.put("role", role);
+
+    return Jwts.builder()
+            .claims(claims)
+            .subject(email)
+            .issuedAt(new Date())
+            .expiration(
+                    new Date(
+                            System.currentTimeMillis()
+                                    + jwtExpiration
+                    )
+            )
+            .signWith(
+                    SignatureAlgorithm.HS256,
+                    secretKey
+            )
+            .compact();
+}
 
     public String extractUsername(String token) {
 
@@ -44,6 +56,14 @@ public class JwtService {
                 Claims::getSubject
         );
     }
+
+    public String extractRole(String token) {
+
+    return extractClaim(
+            token,
+            claims -> claims.get("role", String.class)
+    );
+}
 
     public <T> T extractClaim(
             String token,

@@ -97,8 +97,9 @@ public ApiResponse<LoginResponse> login(
 
     String token =
             jwtService.generateToken(
-                    user.getEmail()
-            );
+        user.getEmail(),
+        user.getRole().name()
+);
 
     LoginResponse loginResponse =
             LoginResponse.builder()

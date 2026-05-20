@@ -1,7 +1,7 @@
 package com.querypulse.backend.config;
 
 import com.querypulse.backend.security.JwtAuthenticationFilter;
-
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.context.annotation.Bean;
@@ -13,7 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
+@EnableMethodSecurity
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
