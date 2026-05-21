@@ -1,0 +1,60 @@
+<div class="login-container">
+
+    <div class="login-card">
+
+        <h1>QueryPulse</h1>
+
+        <p>
+            Enterprise PostgreSQL Monitoring Platform
+        </p>
+
+        <form
+            (ngSubmit)="onLogin()"
+        >
+
+            <input
+                type="email"
+
+                placeholder="Enter Email"
+
+                [(ngModel)]="email"
+
+                name="email"
+            >
+
+            <input
+                type="password"
+
+                placeholder="Enter Password"
+
+                [(ngModel)]="password"
+
+                name="password"
+            >
+
+            <button
+                type="submit"
+            >
+
+                {{
+                    loading
+                    ? 'Signing In...'
+                    : 'Login'
+                }}
+
+            </button>
+
+            <p
+                *ngIf="errorMessage"
+                class="error-message"
+            >
+
+                {{ errorMessage }}
+
+            </p>
+
+        </form>
+
+    </div>
+
+</div>

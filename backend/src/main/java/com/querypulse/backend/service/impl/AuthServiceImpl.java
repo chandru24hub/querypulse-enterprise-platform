@@ -1,5 +1,7 @@
 package com.querypulse.backend.service.impl;
 
+import com.querypulse.backend.enums.Role;
+import com.querypulse.backend.enums.ApprovalStatus;
 import com.querypulse.backend.dto.ApiResponse;
 import com.querypulse.backend.dto.RegisterRequest;
 import com.querypulse.backend.entity.User;
@@ -47,16 +49,18 @@ public class AuthServiceImpl implements AuthService {
         }
 
         User user = User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .passwordHash(
-                        passwordEncoder.encode(
-                                request.getPassword()
-                        )
+        .firstName(request.getFirstName())
+        .lastName(request.getLastName())
+        .username(request.getUsername())
+        .email(request.getEmail())
+        .passwordHash(
+                passwordEncoder.encode(
+                        request.getPassword()
                 )
-                .build();
+        )
+        .role(Role.USER)
+        .approvalStatus(ApprovalStatus.PENDING)
+        .build();
 
         userRepository.save(user);
 
@@ -81,6 +85,14 @@ public ApiResponse<LoginResponse> login(
                             "Invalid email or password"
                     )
             );
+
+            if (user.getApprovalStatus()
+        != ApprovalStatus.APPROVED) {
+
+    throw new RuntimeException(
+            "Your account is pending admin approval"
+    );
+}
 
     boolean passwordMatches =
             passwordEncoder.matches(

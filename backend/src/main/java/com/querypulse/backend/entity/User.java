@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.querypulse.backend.enums.Role;
+import com.querypulse.backend.enums.ApprovalStatus;
 
 @Entity
 @Table(name = "users")
@@ -41,7 +42,7 @@ public class User {
     @Enumerated(EnumType.STRING)
 
      @Builder.Default
-     private Role role = Role.USER;
+private Role role = Role.USER;
 
    @Builder.Default
 private Boolean isActive = true;
@@ -54,4 +55,12 @@ private LocalDateTime createdAt = LocalDateTime.now();
 
 @Builder.Default
 private LocalDateTime updatedAt = LocalDateTime.now();
+
+private String approvedBy;
+
+private String rejectionReason;
+
+@Enumerated(EnumType.STRING)
+private ApprovalStatus approvalStatus =
+        ApprovalStatus.PENDING;
 }
