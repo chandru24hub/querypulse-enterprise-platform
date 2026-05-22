@@ -13,8 +13,12 @@ public interface AdminService {
 
     List<User> getRejectedUsers();
 
-    String approveUser(UUID userId);
+    String approveUser(
+            UUID userId
+    );
 
-    String rejectUser(UUID userId,
-                      String reason);
+    String rejectUser(
+            UUID userId,
+            String reason
+    );
 }

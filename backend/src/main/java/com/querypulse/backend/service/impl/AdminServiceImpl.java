@@ -14,43 +14,52 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class AdminServiceImpl implements AdminService {
+public class AdminServiceImpl
+        implements AdminService {
 
-    private final UserRepository userRepository;
+    private final UserRepository
+            userRepository;
 
     @Override
     public List<User> getPendingUsers() {
 
-        return userRepository.findByApprovalStatus(
-                ApprovalStatus.PENDING
-        );
+        return userRepository
+                .findByApprovalStatus(
+                        ApprovalStatus.PENDING
+                );
     }
 
     @Override
     public List<User> getApprovedUsers() {
 
-        return userRepository.findByApprovalStatus(
-                ApprovalStatus.APPROVED
-        );
+        return userRepository
+                .findByApprovalStatus(
+                        ApprovalStatus.APPROVED
+                );
     }
 
     @Override
     public List<User> getRejectedUsers() {
 
-        return userRepository.findByApprovalStatus(
-                ApprovalStatus.REJECTED
-        );
+        return userRepository
+                .findByApprovalStatus(
+                        ApprovalStatus.REJECTED
+                );
     }
 
     @Override
-    public String approveUser(UUID userId) {
+    public String approveUser(
+            UUID userId
+    ) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "User not found"
-                        )
-                );
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "User not found"
+                                )
+                        );
 
         user.setApprovalStatus(
                 ApprovalStatus.APPROVED
@@ -62,21 +71,27 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public String rejectUser(UUID userId,
-                             String reason) {
+    public String rejectUser(
+            UUID userId,
+            String reason
+    ) {
 
-        User user = userRepository.findById(userId)
-                .orElseThrow(() ->
-                        new RuntimeException(
-                                "User not found"
-                        )
-                );
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "User not found"
+                                )
+                        );
 
         user.setApprovalStatus(
                 ApprovalStatus.REJECTED
         );
 
-        user.setRejectionReason(reason);
+        user.setRejectionReason(
+                reason
+        );
 
         userRepository.save(user);
 

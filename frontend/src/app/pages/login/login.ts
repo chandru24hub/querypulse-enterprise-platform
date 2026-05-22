@@ -1,93 +1,74 @@
 import { Component } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
-
 import { FormsModule } from '@angular/forms';
-
 import { Router } from '@angular/router';
-
-import { AuthService }
-from '../../services/auth.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
-    selector: 'app-login',
-
-    standalone: true,
-
-    imports: [
-        CommonModule,
-        FormsModule
-    ],
-
-    templateUrl: './login.html',
-
-    styleUrl: './login.css'
+  selector: 'app-login',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
+  templateUrl: './login.html',
+  styleUrl: './login.css'
 })
 export class Login {
 
-    email = '';
+  email = '';
+  password = '';
+  loading = false;
+  errorMessage = '';
 
-    password = '';
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {}
 
-    loading = false;
+  onLogin(): void {
 
-    errorMessage = '';
+    this.loading = true;
+    this.errorMessage = '';
 
-    constructor(
-        private authService: AuthService,
-        private router: Router
-    ) {
+    const payload = {
+      email: this.email,
+      password: this.password
+    };
 
-    }
+    this.http.post<any>(
+      'http://localhost:8080/api/auth/login',
+      payload
+    ).subscribe({
 
-    onLogin() {
+      next: (response) => {
 
-        this.loading = true;
+        const token = response.data.token;
 
-        this.errorMessage = '';
+        localStorage.setItem('token', token);
 
-        const payload = {
+        const payloadBase64 = token.split('.')[1];
 
-            email: this.email,
+        const decodedPayload = JSON.parse(atob(payloadBase64));
 
-            password: this.password
-        };
+        const role = decodedPayload.role;
 
-        this.authService
-            .login(payload)
-            .subscribe({
+        localStorage.setItem('role', role);
 
-                next: (response) => {
+        this.loading = false;
 
-                    localStorage.setItem(
-                        'token',
-                        response.data.token
-                    );
+        if (role === 'ADMIN') {
+          this.router.navigate(['/admin-dashboard']);
+        } else {
+          this.router.navigate(['/user-dashboard']);
+        }
+      },
 
-                    localStorage.setItem(
-                        'role',
-                        response.data.role
-                    );
-
-                    alert('Login Successful');
-
-                    this.router.navigate([
-                        '/dashboard'
-                    ]);
-                },
-
-                error: (error) => {
-
-                    this.errorMessage =
-                        error.error.message;
-
-                    this.loading = false;
-                },
-
-                complete: () => {
-
-                    this.loading = false;
-                }
-            });
-    }
+      error: (error: any) => {
+        this.errorMessage =
+          error?.error?.message || 'Login failed. Please try again.';
+        this.loading = false;
+      }
+    });
+  }
 }
