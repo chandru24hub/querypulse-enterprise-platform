@@ -1,0 +1,127 @@
+<div class="register-container">
+
+  <div class="register-card">
+
+    <h1>
+      Create Account
+    </h1>
+
+    <p class="subtitle">
+      Register for QueryPulse
+    </p>
+
+    <div
+      class="success-message"
+      *ngIf="successMessage"
+    >
+      {{ successMessage }}
+    </div>
+
+    <div
+      class="error-message"
+      *ngIf="errorMessage"
+    >
+      {{ errorMessage }}
+    </div>
+
+    <form (ngSubmit)="register()">
+
+      <div class="input-group">
+
+        <input
+          type="text"
+          placeholder="First Name"
+          [(ngModel)]="firstName"
+          name="firstName"
+        />
+
+      </div>
+
+      <div class="input-group">
+
+        <input
+          type="text"
+          placeholder="Last Name"
+          [(ngModel)]="lastName"
+          name="lastName"
+        />
+
+      </div>
+
+      <div class="input-group">
+
+        <input
+          type="text"
+          placeholder="Username"
+          [(ngModel)]="username"
+          name="username"
+        />
+
+      </div>
+
+      <div class="input-group">
+
+        <input
+          type="email"
+          placeholder="Email"
+          [(ngModel)]="email"
+          name="email"
+        />
+
+      </div>
+
+      <div class="input-group">
+
+        <input
+          type="password"
+          placeholder="Password"
+          [(ngModel)]="password"
+          name="password"
+        />
+
+      </div>
+
+      <div class="input-group">
+
+        <input
+          type="password"
+          placeholder="Confirm Password"
+          [(ngModel)]="confirmPassword"
+          name="confirmPassword"
+        />
+
+      </div>
+
+      <button
+        type="submit"
+        class="register-btn"
+      >
+
+        <span *ngIf="!loading">
+          Register
+        </span>
+
+        <span *ngIf="loading">
+          Registering...
+        </span>
+
+      </button>
+
+    </form>
+
+    <p class="login-text">
+
+      Already have an account?
+
+      <span
+        class="login-link"
+        (click)="goToLogin()"
+      >
+        Login
+      </span>
+
+    </p>
+
+  </div>
+
+</div>

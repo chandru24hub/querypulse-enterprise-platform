@@ -1,34 +1,119 @@
+<app-sidebar></app-sidebar>
+
 <div class="dashboard-container">
 
-  <h1 class="dashboard-title">Pending User Approvals</h1>
+  <h1 class="dashboard-title">
+    Admin User Management
+  </h1>
 
-  <div *ngIf="isLoading" class="empty-message">
-    Loading pending users...
+  <div class="status-cards">
+
+    <div class="status-card pending">
+
+      <h2>Pending</h2>
+
+      <p>{{ pendingUsers.length }}</p>
+
+    </div>
+
+    <div class="status-card approved">
+
+      <h2>Approved</h2>
+
+      <p>{{ approvedUsers.length }}</p>
+
+    </div>
+
+    <div class="status-card rejected">
+
+      <h2>Rejected</h2>
+
+      <p>{{ rejectedUsers.length }}</p>
+
+    </div>
+
   </div>
 
-  <div *ngIf="errorMessage" class="error-message">
-    {{ errorMessage }}
+  <h2 class="section-title">
+    Pending User Approvals
+  </h2>
+
+  <div
+    *ngIf="pendingUsers.length === 0"
+    class="empty-message"
+  >
+    No pending users found
   </div>
 
-  <div *ngIf="!isLoading && !errorMessage && pendingUsers.length === 0"
-       class="empty-message">
-    No pending users to approve.
-  </div>
+  <div class="users-container">
 
-  <div class="users-container"
-       *ngIf="!isLoading && pendingUsers.length > 0">
+    <div
+      class="user-card"
+      *ngFor="let user of pendingUsers"
+    >
 
-    <div class="user-card"
-         *ngFor="let user of pendingUsers">
+      <h2>
+        {{ user.firstName }}
+        {{ user.lastName }}
+      </h2>
 
-      <h2>{{ user.firstName }} {{ user.lastName }}</h2>
       <p>{{ user.email }}</p>
+
       <p>{{ user.username }}</p>
 
-      <button class="approve-btn"
-              (click)="approveUser(user.id)">
-        Approve
-      </button>
+      <div class="button-group">
+
+        <button
+          class="approve-btn"
+          (click)="approveUser(user.id)"
+        >
+          Approve
+        </button>
+
+        <button
+          class="reject-btn"
+          (click)="openRejectModal(user.id)"
+        >
+          Reject
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div
+    class="modal-overlay"
+    *ngIf="showRejectModal"
+  >
+
+    <div class="modal">
+
+      <h2>Reject User</h2>
+
+      <textarea
+        [(ngModel)]="rejectionReason"
+        placeholder="Enter rejection reason"
+      ></textarea>
+
+      <div class="modal-buttons">
+
+        <button
+          class="approve-btn"
+          (click)="rejectUser()"
+        >
+          Submit
+        </button>
+
+        <button
+          class="reject-btn"
+          (click)="closeRejectModal()"
+        >
+          Cancel
+        </button>
+
+      </div>
 
     </div>
 

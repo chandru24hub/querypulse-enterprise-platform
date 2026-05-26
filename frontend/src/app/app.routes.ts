@@ -3,6 +3,9 @@ import { Routes } from '@angular/router';
 import { Login }
 from './pages/login/login';
 
+import { Register }
+from './pages/register/register';
+
 import { AdminDashboard }
 from './pages/admin-dashboard/admin-dashboard';
 
@@ -14,25 +17,35 @@ from './guards/auth-guard';
 
 export const routes: Routes = [
 
-    {
-        path: '',
-        component: Login
-    },
+  {
+    path: '',
+    component: Login
+  },
 
-    {
-        path: 'admin-dashboard',
-        component: AdminDashboard,
-        canActivate: [authGuard]
-    },
+  {
+    path: 'register',
+    component: Register
+  },
 
-    {
-        path: 'user-dashboard',
-        component: UserDashboard,
-        canActivate: [authGuard]
-    },
+  {
+    path: 'admin-dashboard',
 
-    {
-        path: '**',
-        redirectTo: ''
-    }
+    component: AdminDashboard,
+
+    canActivate: [authGuard]
+  },
+
+  {
+    path: 'user-dashboard',
+
+    component: UserDashboard,
+
+    canActivate: [authGuard]
+  },
+
+  {
+    path: '**',
+
+    redirectTo: ''
+  }
 ];

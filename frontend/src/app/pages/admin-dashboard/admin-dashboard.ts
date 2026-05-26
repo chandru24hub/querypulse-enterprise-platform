@@ -1,11 +1,14 @@
 import {
   Component,
   OnInit,
-  ChangeDetectorRef,
-  ChangeDetectionStrategy
+  ChangeDetectorRef
 } from '@angular/core';
 
-import { CommonModule } from '@angular/common';
+import { CommonModule }
+from '@angular/common';
+
+import { FormsModule }
+from '@angular/forms';
 
 import {
   HttpClient,
@@ -13,18 +16,43 @@ import {
   HttpErrorResponse
 } from '@angular/common/http';
 
+import { Sidebar }
+from '../../components/sidebar/sidebar';
+
 @Component({
   selector: 'app-admin-dashboard',
+
   standalone: true,
-  imports: [CommonModule],
+
+  imports: [
+    CommonModule,
+    FormsModule,
+    Sidebar
+  ],
+
   templateUrl: './admin-dashboard.html',
+
   styleUrls: ['./admin-dashboard.css']
 })
-export class AdminDashboard implements OnInit {
+
+export class AdminDashboard
+implements OnInit {
 
   pendingUsers: any[] = [];
+
+  approvedUsers: any[] = [];
+
+  rejectedUsers: any[] = [];
+
   isLoading = false;
+
   errorMessage = '';
+
+  showRejectModal = false;
+
+  selectedUserId = '';
+
+  rejectionReason = '';
 
   constructor(
     private http: HttpClient,
@@ -32,77 +60,209 @@ export class AdminDashboard implements OnInit {
   ) {}
 
   ngOnInit(): void {
+
     this.loadPendingUsers();
+
+    this.loadApprovedUsers();
+
+    this.loadRejectedUsers();
+  }
+
+  getHeaders(): HttpHeaders {
+
+    const token =
+      localStorage.getItem('token');
+
+    return new HttpHeaders({
+      Authorization:
+        `Bearer ${token}`
+    });
   }
 
   loadPendingUsers(): void {
 
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      this.isLoading = false;
-      this.errorMessage = 'Not logged in. Please log in again.';
-      return;
-    }
-
     this.isLoading = true;
-    this.errorMessage = '';
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
-
-    this.http.get<any>(
+    this.http.get<any[]>(
       'http://localhost:8080/api/admin/pending-users',
-      { headers }
+      {
+        headers: this.getHeaders()
+      }
     ).subscribe({
 
       next: (response: any) => {
-        this.pendingUsers = Array.isArray(response)
+
+        this.pendingUsers =
+          Array.isArray(response)
           ? response
-          : (response.data ?? response.users ?? []);
+          : response.data ?? [];
+
         this.isLoading = false;
-        this.cdr.detectChanges();  // ← force UI update
+
+        this.cdr.detectChanges();
       },
 
-      error: (error: HttpErrorResponse) => {
+      error: (
+        error: HttpErrorResponse
+      ) => {
+
+        console.error(error);
+
+        this.errorMessage =
+          'Failed to load pending users';
+
         this.isLoading = false;
-        if (error.status === 401) {
-          this.errorMessage = 'Session expired. Please log in again.';
-        } else if (error.status === 403) {
-          this.errorMessage = 'Access denied. Admin only.';
-        } else if (error.status === 0) {
-          this.errorMessage = 'Cannot reach server. Is the backend running?';
-        } else {
-          this.errorMessage = `Error ${error.status}: Could not load users.`;
-        }
-        this.cdr.detectChanges();  // ← force UI update on error too
-        console.error('API ERROR:', error);
       }
     });
   }
 
-  approveUser(userId: any): void {
+  loadApprovedUsers(): void {
 
-    const token = localStorage.getItem('token');
+    this.http.get<any[]>(
+      'http://localhost:8080/api/admin/approved-users',
+      {
+        headers: this.getHeaders()
+      }
+    ).subscribe({
 
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
+      next: (response: any) => {
+
+        this.approvedUsers =
+          Array.isArray(response)
+          ? response
+          : response.data ?? [];
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+
+        console.error(error);
+      }
     });
+  }
+
+  loadRejectedUsers(): void {
+
+    this.http.get<any[]>(
+      'http://localhost:8080/api/admin/rejected-users',
+      {
+        headers: this.getHeaders()
+      }
+    ).subscribe({
+
+      next: (response: any) => {
+
+        this.rejectedUsers =
+          Array.isArray(response)
+          ? response
+          : response.data ?? [];
+
+        this.cdr.detectChanges();
+      },
+
+      error: (error) => {
+
+        console.error(error);
+      }
+    });
+  }
+
+  approveUser(userId: string): void {
 
     this.http.post(
       `http://localhost:8080/api/admin/approve-user/${userId}`,
       {},
-      { headers }
+      {
+        headers: this.getHeaders(),
+
+        responseType: 'text'
+      }
     ).subscribe({
+
       next: () => {
-        this.pendingUsers = this.pendingUsers.filter(u => u.id !== userId);
-        this.cdr.detectChanges();
+
+        alert(
+          'User Approved Successfully'
+        );
+
+        this.refreshAllData();
       },
-      error: (err) => {
-        alert('Failed to approve user. Please try again.');
-        console.error(err);
+
+      error: (error) => {
+
+        console.error(error);
+
+        alert(
+          'Failed to approve user'
+        );
       }
     });
+  }
+
+  openRejectModal(userId: string): void {
+
+    this.selectedUserId = userId;
+
+    this.showRejectModal = true;
+  }
+
+  closeRejectModal(): void {
+
+    this.showRejectModal = false;
+
+    this.rejectionReason = '';
+  }
+
+  rejectUser(): void {
+
+    if (!this.rejectionReason.trim()) {
+
+      alert(
+        'Please enter rejection reason'
+      );
+
+      return;
+    }
+
+    this.http.post(
+      `http://localhost:8080/api/admin/reject-user/${this.selectedUserId}?reason=${this.rejectionReason}`,
+      {},
+      {
+        headers: this.getHeaders(),
+
+        responseType: 'text'
+      }
+    ).subscribe({
+
+      next: () => {
+
+        alert(
+          'User Rejected Successfully'
+        );
+
+        this.closeRejectModal();
+
+        this.refreshAllData();
+      },
+
+      error: (error) => {
+
+        console.error(error);
+
+        alert(
+          'Failed to reject user'
+        );
+      }
+    });
+  }
+
+  refreshAllData(): void {
+
+    this.loadPendingUsers();
+
+    this.loadApprovedUsers();
+
+    this.loadRejectedUsers();
   }
 }

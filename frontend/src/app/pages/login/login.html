@@ -28,9 +28,24 @@
         {{ loading ? 'Signing In...' : 'Login' }}
       </button>
 
+      <p class="register-text">
+
+  Don't have an account?
+
+  <span
+    class="register-link"
+    routerLink="/register"
+  >
+    Register
+  </span>
+
+</p>
+
       <div class="error-message" *ngIf="errorMessage">
         {{ errorMessage }}
       </div>
+
+
 
     </form>
 

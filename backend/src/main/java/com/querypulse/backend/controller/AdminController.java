@@ -9,21 +9,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:4200")
 public class AdminController {
 
     private final AdminService adminService;
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/dashboard")
-    public String adminDashboard() {
-
-        return "Welcome Admin";
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/pending-users")
@@ -33,13 +28,40 @@ public class AdminController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("/approve/{userId}")
+    @GetMapping("/approved-users")
+    public List<User> getApprovedUsers() {
+
+        return adminService.getApprovedUsers();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/rejected-users")
+    public List<User> getRejectedUsers() {
+
+        return adminService.getRejectedUsers();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/approve-user/{userId}")
     public String approveUser(
             @PathVariable UUID userId
     ) {
 
-        adminService.approveUser(userId);
+        return adminService.approveUser(userId);
+    }
 
-        return "User approved successfully";
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/reject-user/{userId}")
+    public String rejectUser(
+
+            @PathVariable UUID userId,
+
+            @RequestParam String reason
+    ) {
+
+        return adminService.rejectUser(
+                userId,
+                reason
+        );
     }
 }

@@ -54,10 +54,10 @@ public class AuthServiceImpl implements AuthService {
         .username(request.getUsername())
         .email(request.getEmail())
         .passwordHash(
-                passwordEncoder.encode(
-                        request.getPassword()
-                )
+        passwordEncoder.encode(
+                request.getPassword()
         )
+)
         .role(Role.USER)
         .approvalStatus(ApprovalStatus.PENDING)
         .build();

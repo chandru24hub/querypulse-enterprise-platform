@@ -1,66 +1,62 @@
 package com.querypulse.backend.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.querypulse.backend.enums.Role;
 import com.querypulse.backend.enums.ApprovalStatus;
+import com.querypulse.backend.enums.Role;
+
+import jakarta.persistence.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "users")
-@Getter
-@Setter
+
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class User {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "first_name")
     private String firstName;
 
+    @Column(name = "last_name")
     private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
 
-    private String phoneNumber;
-
-    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
+    private Role role;
 
-     @Builder.Default
-private Role role = Role.USER;
+    @Column(name = "is_active")
+    private Boolean isActive;
 
-   @Builder.Default
-private Boolean isActive = true;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "approval_status")
+    private ApprovalStatus approvalStatus;
 
-@Builder.Default
-private Boolean isEmailVerified = false;
+    @Column(name = "rejected_reason")
+    private String rejectionReason;
 
-@Builder.Default
-private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
 
-@Builder.Default
-private LocalDateTime updatedAt = LocalDateTime.now();
-
-private String approvedBy;
-
-private String rejectionReason;
-
-@Enumerated(EnumType.STRING)
-private ApprovalStatus approvalStatus =
-        ApprovalStatus.PENDING;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 }
