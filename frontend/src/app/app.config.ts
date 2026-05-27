@@ -1,7 +1,5 @@
-import { ApplicationConfig } from '@angular/core';
-
 import {
-  provideBrowserGlobalErrorListeners
+  ApplicationConfig
 } from '@angular/core';
 
 import {
@@ -9,20 +7,35 @@ import {
 } from '@angular/router';
 
 import {
-  provideHttpClient
+  provideHttpClient,
+
+  withInterceptors
 } from '@angular/common/http';
 
-import { routes } from './app.routes';
+import {
+  routes
+} from './app.routes';
 
-export const appConfig: ApplicationConfig = {
+import {
+  authInterceptor
+} from './interceptors/auth.interceptor';
+
+export const appConfig:
+ApplicationConfig = {
 
   providers: [
 
-    provideBrowserGlobalErrorListeners(),
+    provideRouter(
+      routes
+    ),
 
-    provideRouter(routes),
+    provideHttpClient(
 
-    provideHttpClient()
+      withInterceptors([
+        authInterceptor
+      ])
+
+    )
 
   ]
 };

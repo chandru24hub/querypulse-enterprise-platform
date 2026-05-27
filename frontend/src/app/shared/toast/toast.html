@@ -1,0 +1,16 @@
+<div
+  *ngIf="toast"
+  class="toast-container"
+>
+
+  <div
+    class="toast"
+
+    [ngClass]="toast.type"
+  >
+
+    {{ toast.message }}
+
+  </div>
+
+</div>

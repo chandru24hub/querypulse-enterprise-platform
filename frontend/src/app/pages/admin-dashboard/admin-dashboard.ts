@@ -12,12 +12,19 @@ from '@angular/forms';
 
 import {
   HttpClient,
-  HttpHeaders,
   HttpErrorResponse
 } from '@angular/common/http';
 
 import { Sidebar }
 from '../../components/sidebar/sidebar';
+
+import {
+  ToastComponent
+} from '../../shared/toast/toast';
+
+import {
+  ToastService
+} from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -27,7 +34,8 @@ from '../../components/sidebar/sidebar';
   imports: [
     CommonModule,
     FormsModule,
-    Sidebar
+    Sidebar,
+    ToastComponent
   ],
 
   templateUrl: './admin-dashboard.html',
@@ -55,8 +63,13 @@ implements OnInit {
   rejectionReason = '';
 
   constructor(
+
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+
+    private cdr: ChangeDetectorRef,
+
+    private toastService: ToastService
+
   ) {}
 
   ngOnInit(): void {
@@ -68,33 +81,28 @@ implements OnInit {
     this.loadRejectedUsers();
   }
 
-  getHeaders(): HttpHeaders {
-
-    const token =
-      localStorage.getItem('token');
-
-    return new HttpHeaders({
-      Authorization:
-        `Bearer ${token}`
-    });
-  }
+  /*
+    LOAD PENDING USERS
+  */
 
   loadPendingUsers(): void {
 
     this.isLoading = true;
 
     this.http.get<any[]>(
-      'http://localhost:8080/api/admin/pending-users',
-      {
-        headers: this.getHeaders()
-      }
+
+      'http://localhost:8080/api/admin/pending-users'
+
     ).subscribe({
 
       next: (response: any) => {
 
         this.pendingUsers =
+
           Array.isArray(response)
+
           ? response
+
           : response.data ?? [];
 
         this.isLoading = false;
@@ -103,33 +111,46 @@ implements OnInit {
       },
 
       error: (
+
         error: HttpErrorResponse
+
       ) => {
 
         console.error(error);
 
         this.errorMessage =
+
           'Failed to load pending users';
+
+        this.toastService.showError(
+          'Failed to load pending users'
+        );
 
         this.isLoading = false;
       }
     });
   }
 
+  /*
+    LOAD APPROVED USERS
+  */
+
   loadApprovedUsers(): void {
 
     this.http.get<any[]>(
-      'http://localhost:8080/api/admin/approved-users',
-      {
-        headers: this.getHeaders()
-      }
+
+      'http://localhost:8080/api/admin/approved-users'
+
     ).subscribe({
 
       next: (response: any) => {
 
         this.approvedUsers =
+
           Array.isArray(response)
+
           ? response
+
           : response.data ?? [];
 
         this.cdr.detectChanges();
@@ -138,24 +159,34 @@ implements OnInit {
       error: (error) => {
 
         console.error(error);
+
+        this.toastService.showError(
+          'Failed to load approved users'
+        );
       }
     });
   }
 
+  /*
+    LOAD REJECTED USERS
+  */
+
   loadRejectedUsers(): void {
 
     this.http.get<any[]>(
-      'http://localhost:8080/api/admin/rejected-users',
-      {
-        headers: this.getHeaders()
-      }
+
+      'http://localhost:8080/api/admin/rejected-users'
+
     ).subscribe({
 
       next: (response: any) => {
 
         this.rejectedUsers =
+
           Array.isArray(response)
+
           ? response
+
           : response.data ?? [];
 
         this.cdr.detectChanges();
@@ -164,26 +195,36 @@ implements OnInit {
       error: (error) => {
 
         console.error(error);
+
+        this.toastService.showError(
+          'Failed to load rejected users'
+        );
       }
     });
   }
 
+  /*
+    APPROVE USER
+  */
+
   approveUser(userId: string): void {
 
     this.http.post(
-      `http://localhost:8080/api/admin/approve-user/${userId}`,
-      {},
-      {
-        headers: this.getHeaders(),
 
+      `http://localhost:8080/api/admin/approve-user/${userId}`,
+
+      {},
+
+      {
         responseType: 'text'
       }
+
     ).subscribe({
 
-      next: () => {
+      next: (response) => {
 
-        alert(
-          'User Approved Successfully'
+        this.toastService.showSuccess(
+          response
         );
 
         this.refreshAllData();
@@ -193,12 +234,16 @@ implements OnInit {
 
         console.error(error);
 
-        alert(
+        this.toastService.showError(
           'Failed to approve user'
         );
       }
     });
   }
+
+  /*
+    OPEN REJECT MODAL
+  */
 
   openRejectModal(userId: string): void {
 
@@ -207,6 +252,10 @@ implements OnInit {
     this.showRejectModal = true;
   }
 
+  /*
+    CLOSE REJECT MODAL
+  */
+
   closeRejectModal(): void {
 
     this.showRejectModal = false;
@@ -214,11 +263,15 @@ implements OnInit {
     this.rejectionReason = '';
   }
 
+  /*
+    REJECT USER
+  */
+
   rejectUser(): void {
 
     if (!this.rejectionReason.trim()) {
 
-      alert(
+      this.toastService.showWarning(
         'Please enter rejection reason'
       );
 
@@ -226,19 +279,21 @@ implements OnInit {
     }
 
     this.http.post(
-      `http://localhost:8080/api/admin/reject-user/${this.selectedUserId}?reason=${this.rejectionReason}`,
-      {},
-      {
-        headers: this.getHeaders(),
 
+      `http://localhost:8080/api/admin/reject-user/${this.selectedUserId}?reason=${this.rejectionReason}`,
+
+      {},
+
+      {
         responseType: 'text'
       }
+
     ).subscribe({
 
-      next: () => {
+      next: (response) => {
 
-        alert(
-          'User Rejected Successfully'
+        this.toastService.showSuccess(
+          response
         );
 
         this.closeRejectModal();
@@ -250,12 +305,16 @@ implements OnInit {
 
         console.error(error);
 
-        alert(
+        this.toastService.showError(
           'Failed to reject user'
         );
       }
     });
   }
+
+  /*
+    REFRESH ALL DATA
+  */
 
   refreshAllData(): void {
 
