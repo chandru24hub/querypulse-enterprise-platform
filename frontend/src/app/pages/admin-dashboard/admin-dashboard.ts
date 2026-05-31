@@ -62,6 +62,10 @@ implements OnInit {
 
   rejectionReason = '';
 
+  pendingSearch = '';
+
+  filteredPendingUsers: any[] = [];
+
   constructor(
 
     private http: HttpClient,
@@ -98,13 +102,12 @@ implements OnInit {
       next: (response: any) => {
 
         this.pendingUsers =
+        Array.isArray(response)
+       ? response
+      : response.data ?? [];
 
-          Array.isArray(response)
-
-          ? response
-
-          : response.data ?? [];
-
+        this.filteredPendingUsers =
+       [...this.pendingUsers];
         this.isLoading = false;
 
         this.cdr.detectChanges();
@@ -312,9 +315,39 @@ implements OnInit {
     });
   }
 
-  /*
-    REFRESH ALL DATA
-  */
+ filterPendingUsers(): void {
+
+  const search =
+    this.pendingSearch
+      .toLowerCase()
+      .trim();
+
+  this.filteredPendingUsers =
+    this.pendingUsers.filter(user =>
+
+      user.firstName
+        ?.toLowerCase()
+        .includes(search)
+
+      ||
+
+      user.lastName
+        ?.toLowerCase()
+        .includes(search)
+
+      ||
+
+      user.username
+        ?.toLowerCase()
+        .includes(search)
+
+      ||
+
+      user.email
+        ?.toLowerCase()
+        .includes(search)
+    );
+}
 
   refreshAllData(): void {
 

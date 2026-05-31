@@ -33,60 +33,65 @@
     </div>
 
   </div>
+<h2 class="section-title">
+  Pending User Approvals
+</h2>
 
-  <h2 class="section-title">
-    Pending User Approvals
-  </h2>
+<input
+  type="text"
+  class="search-input"
+  placeholder="Search Pending Users..."
+  [(ngModel)]="pendingSearch"
+  (input)="filterPendingUsers()"
+/>
+
+<div
+  *ngIf="
+    filteredPendingUsers.length === 0
+    && !isLoading
+  "
+  class="empty-message"
+>
+  No pending users found
+</div>
+
+<div class="users-container">
 
   <div
-    *ngIf="pendingUsers.length === 0"
-    class="empty-message"
+    class="user-card"
+    *ngFor="
+      let user of filteredPendingUsers
+    "
   >
-    No pending users found
-  </div>
 
-  <div class="users-container">
+    <h2>
+      {{ user.firstName }}
+      {{ user.lastName }}
+    </h2>
 
-    <div
-      class="user-card"
-      *ngFor="let user of pendingUsers"
-    >
+    <p>{{ user.email }}</p>
 
-      <h2>
-        {{ user.firstName }}
-        {{ user.lastName }}
-      </h2>
+    <p>{{ user.username }}</p>
 
-      <p>{{ user.email }}</p>
+    <div class="button-group">
 
-      <p>{{ user.username }}</p>
+      <button
+        class="approve-btn"
+        (click)="approveUser(user.id)"
+      >
+        Approve
+      </button>
 
-      <div class="button-group">
-
-        <button
-          class="approve-btn"
-          (click)="approveUser(user.id)"
-        >
-          Approve
-        </button>
-
-        <button
-          class="reject-btn"
-          (click)="openRejectModal(user.id)"
-        >
-          Reject
-        </button>
-
-      </div>
+      <button
+        class="reject-btn"
+        (click)="openRejectModal(user.id)"
+      >
+        Reject
+      </button>
 
     </div>
 
   </div>
-
-  <div
-    class="modal-overlay"
-    *ngIf="showRejectModal"
-  >
 
     <div class="modal">
 

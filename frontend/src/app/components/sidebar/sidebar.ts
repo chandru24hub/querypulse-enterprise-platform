@@ -32,8 +32,10 @@ export class Sidebar {
 
   logout(): void {
 
-    localStorage.clear();
+  localStorage.removeItem('token');
 
-    this.router.navigate(['/']);
-  }
+  localStorage.removeItem('role');
+
+  this.router.navigate(['/']);
+}
 }
