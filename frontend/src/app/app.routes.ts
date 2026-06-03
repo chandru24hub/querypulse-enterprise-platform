@@ -15,6 +15,9 @@ from './pages/user-dashboard/user-dashboard';
 import { authGuard }
 from './guards/auth-guard';
 
+import { DatabaseManagement }
+from './pages/database-management/database-management';
+
 export const routes: Routes = [
 
   {
@@ -42,10 +45,21 @@ export const routes: Routes = [
 
     canActivate: [authGuard]
   },
+ {
+  path: 'database-management',
 
+  component:
+      DatabaseManagement,
+
+  canActivate: [
+      authGuard
+  ]
+},
   {
     path: '**',
 
     redirectTo: ''
   }
+
+ 
 ];

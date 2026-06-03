@@ -1,0 +1,165 @@
+<app-sidebar></app-sidebar>
+
+<div class="database-page">
+
+  <h1>
+    Database Management
+  </h1>
+
+  <div class="form-card">
+
+    <h2>
+      Register Database
+    </h2>
+
+    <input
+      type="text"
+      placeholder="Display Name"
+      [(ngModel)]="databaseForm.displayName"
+    />
+
+    <select
+      [(ngModel)]="databaseForm.databaseType"
+    >
+
+      <option value="POSTGRESQL">
+        PostgreSQL
+      </option>
+
+      <option value="ORACLE">
+        Oracle
+      </option>
+
+      <option value="MYSQL">
+        MySQL
+      </option>
+
+      <option value="AURORA_POSTGRESQL">
+        Aurora PostgreSQL
+      </option>
+
+    </select>
+
+    <input
+      type="text"
+      placeholder="Host"
+      [(ngModel)]="databaseForm.host"
+    />
+
+    <input
+      type="number"
+      placeholder="Port"
+      [(ngModel)]="databaseForm.port"
+    />
+
+    <input
+      type="text"
+      placeholder="Database Name"
+      [(ngModel)]="databaseForm.databaseName"
+    />
+
+    <input
+      type="text"
+      placeholder="Username"
+      [(ngModel)]="databaseForm.username"
+    />
+
+    <input
+      type="password"
+      placeholder="Password"
+      [(ngModel)]="databaseForm.password"
+    />
+
+    <button
+      (click)="createDatabase()"
+    >
+      Register Database
+    </button>
+
+  </div>
+
+  <div class="table-card">
+
+    <h2>
+      Registered Databases
+    </h2>
+
+    <table>
+
+      <thead>
+
+        <tr>
+
+          <th>Name</th>
+
+          <th>Type</th>
+
+          <th>Host</th>
+
+          <th>Port</th>
+
+          <th>Database</th>
+
+          <th>Status</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <tr
+          *ngFor="
+            let db of databases
+          "
+        >
+
+          <td>
+            {{ db.displayName }}
+          </td>
+
+          <td>
+            {{ db.databaseType }}
+          </td>
+
+          <td>
+            {{ db.host }}
+          </td>
+
+          <td>
+            {{ db.port }}
+          </td>
+
+          <td>
+            {{ db.databaseName }}
+          </td>
+
+          <td>
+
+            <span
+              *ngIf="
+                db.monitoringEnabled
+              "
+            >
+              Enabled
+            </span>
+
+            <span
+              *ngIf="
+                !db.monitoringEnabled
+              "
+            >
+              Disabled
+            </span>
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
