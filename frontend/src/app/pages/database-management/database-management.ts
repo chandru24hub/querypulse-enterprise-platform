@@ -64,22 +64,22 @@ implements OnInit {
 
   createDatabase(): void {
 
-    if (
-  !this.databaseForm.displayName ||
-  !this.databaseForm.host ||
-  !this.databaseForm.databaseName ||
-  !this.databaseForm.username ||
-  !this.databaseForm.password
-) {
+  if (
+    !this.databaseForm.displayName ||
+    !this.databaseForm.host ||
+    !this.databaseForm.databaseName ||
+    !this.databaseForm.username ||
+    !this.databaseForm.password
+  ) {
 
-  alert(
-    'Please fill all required fields'
-  );
+    alert(
+      'Please fill all required fields'
+    );
 
-  return;
-}
+    return;
+  }
 
-    this.http.post(
+  this.http.post(
 
       'http://localhost:8080/api/databases',
 
