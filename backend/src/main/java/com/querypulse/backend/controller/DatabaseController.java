@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import com.querypulse.backend.dto.CreateDatabaseRequest;
+import com.querypulse.backend.dto.DatabaseResponse;
 import com.querypulse.backend.entity.MonitoredDatabase;
 import com.querypulse.backend.service.DatabaseService;
 
@@ -31,7 +32,7 @@ public class DatabaseController {
     }
 
     @GetMapping
-    public List<MonitoredDatabase>
+    public List<DatabaseResponse>
     getAllDatabases() {
 
         return databaseService

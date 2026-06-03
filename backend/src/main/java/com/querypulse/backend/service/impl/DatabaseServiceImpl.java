@@ -2,14 +2,17 @@ package com.querypulse.backend.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.querypulse.backend.dto.CreateDatabaseRequest;
+import com.querypulse.backend.dto.DatabaseResponse;
 import com.querypulse.backend.entity.MonitoredDatabase;
 import com.querypulse.backend.repository.MonitoredDatabaseRepository;
 import com.querypulse.backend.service.DatabaseService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,8 +22,10 @@ implements DatabaseService {
 
     private final MonitoredDatabaseRepository
             monitoredDatabaseRepository;
-    private final BCryptPasswordEncoder passwordEncoder =
-        new BCryptPasswordEncoder();
+
+    private final BCryptPasswordEncoder
+            passwordEncoder =
+            new BCryptPasswordEncoder();
 
     @Override
     public MonitoredDatabase createDatabase(
@@ -30,53 +35,99 @@ implements DatabaseService {
         MonitoredDatabase database =
                 MonitoredDatabase.builder()
 
-                .displayName(
-                        request.getDisplayName()
-                )
+                        .displayName(
+                                request.getDisplayName()
+                        )
 
-                .databaseType(
-                        request.getDatabaseType()
-                )
+                        .databaseType(
+                                request.getDatabaseType()
+                        )
 
-                .host(
-                        request.getHost()
-                )
+                        .host(
+                                request.getHost()
+                        )
 
-                .port(
-                        request.getPort()
-                )
+                        .port(
+                                request.getPort()
+                        )
 
-                .databaseName(
-                        request.getDatabaseName()
-                )
+                        .databaseName(
+                                request.getDatabaseName()
+                        )
 
-                .username(
-                        request.getUsername()
-                )
+                        .username(
+                                request.getUsername()
+                        )
 
-                .password(
-        passwordEncoder.encode(
-                request.getPassword()
-        )
-)
+                        .password(
+                                passwordEncoder.encode(
+                                        request.getPassword()
+                                )
+                        )
 
-                .monitoringEnabled(true)
+                        .monitoringEnabled(true)
 
-                .createdAt(
-                        LocalDateTime.now()
-                )
+                        .createdAt(
+                                LocalDateTime.now()
+                        )
 
-                .build();
+                        .build();
 
         return monitoredDatabaseRepository
                 .save(database);
     }
 
     @Override
-    public List<MonitoredDatabase>
+    public List<DatabaseResponse>
     getAllDatabases() {
 
         return monitoredDatabaseRepository
-                .findAll();
+                .findAll()
+                .stream()
+                .map(database ->
+
+                        DatabaseResponse.builder()
+
+                                .id(
+                                        database.getId()
+                                )
+
+                                .displayName(
+                                        database.getDisplayName()
+                                )
+
+                                .databaseType(
+                                        database.getDatabaseType()
+                                )
+
+                                .host(
+                                        database.getHost()
+                                )
+
+                                .port(
+                                        database.getPort()
+                                )
+
+                                .databaseName(
+                                        database.getDatabaseName()
+                                )
+
+                                .username(
+                                        database.getUsername()
+                                )
+
+                                .monitoringEnabled(
+                                        database.getMonitoringEnabled()
+                                )
+
+                                .createdAt(
+                                        database.getCreatedAt()
+                                )
+
+                                .build()
+                )
+                .collect(
+                        Collectors.toList()
+                );
     }
 }
