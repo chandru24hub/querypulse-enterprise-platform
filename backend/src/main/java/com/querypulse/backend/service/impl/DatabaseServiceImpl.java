@@ -9,7 +9,7 @@ import com.querypulse.backend.dto.CreateDatabaseRequest;
 import com.querypulse.backend.entity.MonitoredDatabase;
 import com.querypulse.backend.repository.MonitoredDatabaseRepository;
 import com.querypulse.backend.service.DatabaseService;
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -19,6 +19,8 @@ implements DatabaseService {
 
     private final MonitoredDatabaseRepository
             monitoredDatabaseRepository;
+    private final BCryptPasswordEncoder passwordEncoder =
+        new BCryptPasswordEncoder();
 
     @Override
     public MonitoredDatabase createDatabase(
@@ -53,8 +55,10 @@ implements DatabaseService {
                 )
 
                 .password(
-                        request.getPassword()
-                )
+        passwordEncoder.encode(
+                request.getPassword()
+        )
+)
 
                 .monitoringEnabled(true)
 
