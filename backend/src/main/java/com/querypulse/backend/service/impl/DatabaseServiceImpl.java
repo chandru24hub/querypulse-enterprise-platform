@@ -1,15 +1,20 @@
 package com.querypulse.backend.service.impl;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import com.querypulse.backend.security.AesEncryptionService;
 import org.springframework.stereotype.Service;
 
 import com.querypulse.backend.dto.CreateDatabaseRequest;
 import com.querypulse.backend.dto.DatabaseResponse;
+import com.querypulse.backend.dto.ConnectionTestResponse;
 import com.querypulse.backend.entity.MonitoredDatabase;
+import com.querypulse.backend.enums.DatabaseType;
 import com.querypulse.backend.repository.MonitoredDatabaseRepository;
 import com.querypulse.backend.service.DatabaseService;
 
@@ -23,9 +28,8 @@ implements DatabaseService {
     private final MonitoredDatabaseRepository
             monitoredDatabaseRepository;
 
-    private final BCryptPasswordEncoder
-            passwordEncoder =
-            new BCryptPasswordEncoder();
+    private final AesEncryptionService
+            aesEncryptionService;
 
     @Override
     public MonitoredDatabase createDatabase(
@@ -60,7 +64,7 @@ implements DatabaseService {
                         )
 
                         .password(
-                                passwordEncoder.encode(
+                                aesEncryptionService.encrypt(
                                         request.getPassword()
                                 )
                         )
@@ -88,9 +92,7 @@ implements DatabaseService {
 
                         DatabaseResponse.builder()
 
-                                .id(
-                                        database.getId()
-                                )
+                                .id(database.getId())
 
                                 .displayName(
                                         database.getDisplayName()
@@ -126,8 +128,72 @@ implements DatabaseService {
 
                                 .build()
                 )
-                .collect(
-                        Collectors.toList()
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public ConnectionTestResponse testConnection(
+            UUID databaseId
+    ) {
+
+        MonitoredDatabase database =
+                monitoredDatabaseRepository
+                        .findById(databaseId)
+                        .orElseThrow(() ->
+                                new RuntimeException(
+                                        "Database not found"
+                                )
+                        );
+
+        try {
+
+            if (
+                database.getDatabaseType()
+                != DatabaseType.POSTGRESQL
+                &&
+                database.getDatabaseType()
+                != DatabaseType.AURORA_POSTGRESQL
+            ) {
+
+                return new ConnectionTestResponse(
+                        false,
+                        "Currently only PostgreSQL is supported"
                 );
+            }
+
+            String password =
+                    aesEncryptionService.decrypt(
+                            database.getPassword()
+                    );
+
+            String jdbcUrl =
+                    "jdbc:postgresql://"
+                    + database.getHost()
+                    + ":"
+                    + database.getPort()
+                    + "/"
+                    + database.getDatabaseName();
+
+            Connection connection =
+                    DriverManager.getConnection(
+                            jdbcUrl,
+                            database.getUsername(),
+                            password
+                    );
+
+            connection.close();
+
+            return new ConnectionTestResponse(
+                    true,
+                    "Database connection successful"
+            );
+
+        } catch (Exception ex) {
+
+            return new ConnectionTestResponse(
+                    false,
+                    ex.getMessage()
+            );
+        }
     }
 }

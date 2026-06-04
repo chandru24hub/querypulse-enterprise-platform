@@ -8,6 +8,8 @@ import com.querypulse.backend.dto.CreateDatabaseRequest;
 import com.querypulse.backend.dto.DatabaseResponse;
 import com.querypulse.backend.entity.MonitoredDatabase;
 import com.querypulse.backend.service.DatabaseService;
+import java.util.UUID;
+import com.querypulse.backend.dto.ConnectionTestResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,4 +40,15 @@ public class DatabaseController {
         return databaseService
                 .getAllDatabases();
     }
+
+    @PostMapping("/{id}/test-connection")
+public ConnectionTestResponse testConnection(
+
+        @PathVariable
+        UUID id
+) {
+
+    return databaseService
+            .testConnection(id);
+}
 }
