@@ -18,6 +18,11 @@ import com.querypulse.backend.enums.DatabaseType;
 import com.querypulse.backend.repository.MonitoredDatabaseRepository;
 import com.querypulse.backend.service.DatabaseService;
 
+import java.sql.Statement;
+import java.sql.ResultSet;
+
+import com.querypulse.backend.dto.DatabaseHealthResponse;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -233,6 +238,98 @@ public ConnectionTestResponse testConnection(
 
         return new ConnectionTestResponse(
                 false,
+                ex.getMessage()
+        );
+    }
+}
+
+@Override
+public DatabaseHealthResponse getDatabaseHealth(
+        UUID databaseId
+) {
+
+    MonitoredDatabase database =
+            monitoredDatabaseRepository
+                    .findById(databaseId)
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Database not found"
+                            )
+                    );
+
+    try {
+
+        String password =
+                aesEncryptionService.decrypt(
+                        database.getPassword()
+                );
+
+        String jdbcUrl =
+                "jdbc:postgresql://"
+                + database.getHost()
+                + ":"
+                + database.getPort()
+                + "/"
+                + database.getDatabaseName();
+
+        Connection connection =
+                DriverManager.getConnection(
+                        jdbcUrl,
+                        database.getUsername(),
+                        password
+                );
+
+        Statement statement =
+                connection.createStatement();
+
+        ResultSet versionResult =
+                statement.executeQuery(
+                        "SELECT version()"
+                );
+
+        String version = "Unknown";
+
+        if (versionResult.next()) {
+
+            version =
+                    versionResult.getString(1);
+        }
+
+        ResultSet sizeResult =
+                statement.executeQuery(
+                        """
+                        SELECT pg_size_pretty(
+                        pg_database_size(
+                        current_database()))
+                        """
+                );
+
+        String size = "Unknown";
+
+        if (sizeResult.next()) {
+
+            size =
+                    sizeResult.getString(1);
+        }
+
+        connection.close();
+
+        return new DatabaseHealthResponse(
+
+                version,
+
+                size,
+
+                database.getConnectionStatus(),
+
+                database.getLastCheckedAt() != null
+                        ? database.getLastCheckedAt().toString()
+                        : "-"
+        );
+
+    } catch (Exception ex) {
+
+        throw new RuntimeException(
                 ex.getMessage()
         );
     }

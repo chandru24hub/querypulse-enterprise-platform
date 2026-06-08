@@ -10,7 +10,7 @@ import com.querypulse.backend.entity.MonitoredDatabase;
 import com.querypulse.backend.service.DatabaseService;
 import java.util.UUID;
 import com.querypulse.backend.dto.ConnectionTestResponse;
-
+import com.querypulse.backend.dto.DatabaseHealthResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -50,5 +50,16 @@ public ConnectionTestResponse testConnection(
 
     return databaseService
             .testConnection(id);
+}
+
+@GetMapping("/{id}/health")
+public DatabaseHealthResponse getDatabaseHealth(
+
+        @PathVariable
+        UUID id
+) {
+
+    return databaseService
+            .getDatabaseHealth(id);
 }
 }
