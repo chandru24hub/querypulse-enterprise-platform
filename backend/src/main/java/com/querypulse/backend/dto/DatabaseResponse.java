@@ -29,4 +29,8 @@ public class DatabaseResponse {
     private Boolean monitoringEnabled;
 
     private LocalDateTime createdAt;
+
+    private String connectionStatus;
+
+    private LocalDateTime lastCheckedAt;
 }

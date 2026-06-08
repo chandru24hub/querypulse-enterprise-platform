@@ -3,6 +3,7 @@ package com.querypulse.backend.entity;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+
 import com.querypulse.backend.enums.DatabaseType;
 
 import jakarta.persistence.*;
@@ -44,4 +45,8 @@ public class MonitoredDatabase {
     private Boolean monitoringEnabled;
 
     private LocalDateTime createdAt;
+
+    private String connectionStatus;
+
+private LocalDateTime lastCheckedAt;
 }

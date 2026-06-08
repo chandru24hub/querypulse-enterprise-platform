@@ -126,74 +126,115 @@ implements DatabaseService {
                                         database.getCreatedAt()
                                 )
 
+                                .connectionStatus(
+        database.getConnectionStatus()
+)
+
+.lastCheckedAt(
+        database.getLastCheckedAt()
+)
+
                                 .build()
                 )
                 .collect(Collectors.toList());
     }
 
-    @Override
-    public ConnectionTestResponse testConnection(
-            UUID databaseId
-    ) {
+   @Override
+public ConnectionTestResponse testConnection(
+        UUID databaseId
+) {
 
-        MonitoredDatabase database =
-                monitoredDatabaseRepository
-                        .findById(databaseId)
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Database not found"
-                                )
-                        );
-
-        try {
-
-            if (
-                database.getDatabaseType()
-                != DatabaseType.POSTGRESQL
-                &&
-                database.getDatabaseType()
-                != DatabaseType.AURORA_POSTGRESQL
-            ) {
-
-                return new ConnectionTestResponse(
-                        false,
-                        "Currently only PostgreSQL is supported"
-                );
-            }
-
-            String password =
-                    aesEncryptionService.decrypt(
-                            database.getPassword()
+    MonitoredDatabase database =
+            monitoredDatabaseRepository
+                    .findById(databaseId)
+                    .orElseThrow(() ->
+                            new RuntimeException(
+                                    "Database not found"
+                            )
                     );
 
-            String jdbcUrl =
-                    "jdbc:postgresql://"
-                    + database.getHost()
-                    + ":"
-                    + database.getPort()
-                    + "/"
-                    + database.getDatabaseName();
+    try {
 
-            Connection connection =
-                    DriverManager.getConnection(
-                            jdbcUrl,
-                            database.getUsername(),
-                            password
-                    );
+        if (
+            database.getDatabaseType()
+            != DatabaseType.POSTGRESQL
+            &&
+            database.getDatabaseType()
+            != DatabaseType.AURORA_POSTGRESQL
+        ) {
 
-            connection.close();
-
-            return new ConnectionTestResponse(
-                    true,
-                    "Database connection successful"
+            database.setConnectionStatus(
+                    "FAILED"
             );
 
-        } catch (Exception ex) {
+            database.setLastCheckedAt(
+                    LocalDateTime.now()
+            );
+
+            monitoredDatabaseRepository
+                    .save(database);
 
             return new ConnectionTestResponse(
                     false,
-                    ex.getMessage()
+                    "Currently only PostgreSQL is supported"
             );
         }
+
+        String password =
+                aesEncryptionService.decrypt(
+                        database.getPassword()
+                );
+
+        String jdbcUrl =
+                "jdbc:postgresql://"
+                + database.getHost()
+                + ":"
+                + database.getPort()
+                + "/"
+                + database.getDatabaseName();
+
+        Connection connection =
+                DriverManager.getConnection(
+                        jdbcUrl,
+                        database.getUsername(),
+                        password
+                );
+
+        connection.close();
+
+        database.setConnectionStatus(
+                "CONNECTED"
+        );
+
+        database.setLastCheckedAt(
+                LocalDateTime.now()
+        );
+
+        monitoredDatabaseRepository
+                .save(database);
+
+        return new ConnectionTestResponse(
+                true,
+                "Database connection successful"
+        );
+
+    } catch (Exception ex) {
+
+        database.setConnectionStatus(
+                "FAILED"
+        );
+
+        database.setLastCheckedAt(
+                LocalDateTime.now()
+        );
+
+        monitoredDatabaseRepository
+                .save(database);
+
+        return new ConnectionTestResponse(
+                false,
+                ex.getMessage()
+        );
     }
+}
 }
