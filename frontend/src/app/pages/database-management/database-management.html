@@ -198,47 +198,86 @@
 
   </div>
 
-  <div
-    class="health-card"
-    *ngIf="selectedHealth"
-  >
+<div
+  class="metrics-container"
+  *ngIf="selectedHealth"
+>
 
-    <h2>
-      Database Health
-    </h2>
+  <div class="metric-card">
 
-    <p>
+    <h3>
+      Active Connections
+    </h3>
 
-      <strong>Version:</strong>
+    <div class="metric-value">
+      {{ selectedHealth.activeConnections }}
+    </div>
+
+  </div>
+
+  <div class="metric-card">
+
+    <h3>
+      Database Size
+    </h3>
+
+    <div class="metric-value">
+      {{ selectedHealth.databaseSize }}
+    </div>
+
+  </div>
+
+  <div class="metric-card">
+
+    <h3>
+      Connection Status
+    </h3>
+
+    <div
+      class="metric-value"
+      [class.connected]="selectedHealth.connectionStatus === 'CONNECTED'"
+      [class.failed]="selectedHealth.connectionStatus === 'FAILED'"
+    >
+      {{ selectedHealth.connectionStatus }}
+    </div>
+
+  </div>
+
+  <div class="metric-card">
+
+    <h3>
+      PostgreSQL Version
+    </h3>
+
+    <div class="metric-value version-text">
 
       {{ selectedHealth.databaseVersion }}
 
-    </p>
-
-    <p>
-
-      <strong>Database Size:</strong>
-
-      {{ selectedHealth.databaseSize }}
-
-    </p>
-
-    <p>
-
-      <strong>Connection Status:</strong>
-
-      {{ selectedHealth.connectionStatus }}
-
-    </p>
-
-    <p>
-
-      <strong>Last Checked:</strong>
-
-      {{ selectedHealth.lastCheckedAt }}
-
-    </p>
+    </div>
 
   </div>
+
+</div>
+
+<div
+  class="health-card"
+  *ngIf="selectedHealth"
+>
+
+  <h2>
+    Additional Details
+  </h2>
+
+  <p>
+
+    <strong>
+      Last Checked:
+    </strong>
+
+    {{ selectedHealth.lastCheckedAt }}
+
+  </p>
+
+</div>
 
 </div>
