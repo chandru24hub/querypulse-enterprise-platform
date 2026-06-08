@@ -94,3 +94,42 @@ th {
 
   color: red;
 }
+
+.health-card {
+
+  background: white;
+
+  padding: 20px;
+
+  border-radius: 12px;
+
+  margin-top: 20px;
+
+  box-shadow:
+      0 2px 8px
+      rgba(0,0,0,0.1);
+}
+
+.health-card h2 {
+
+  margin-bottom: 15px;
+}
+
+.health-card p {
+
+  margin-bottom: 10px;
+}
+
+.connected {
+
+  color: green;
+
+  font-weight: bold;
+}
+
+.failed {
+
+  color: red;
+
+  font-weight: bold;
+}

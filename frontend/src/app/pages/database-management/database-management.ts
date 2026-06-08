@@ -36,6 +36,8 @@ implements OnInit {
 
   databases: any[] = [];
 
+  selectedHealth: any = null;
+
   databaseForm = {
 
     displayName: '',
@@ -145,17 +147,18 @@ implements OnInit {
 
         if (response.success) {
 
-  alert(
-    '🟢 Database Connection Successful'
-  );
+          alert(
+            '🟢 Database Connection Successful'
+          );
 
-  this.loadDatabases();
+        } else {
 
-} alert(
-  '🔴 ' + response.message
-);
+          alert(
+            '🔴 ' + response.message
+          );
+        }
 
-this.loadDatabases();
+        this.loadDatabases();
       },
 
       error: (error) => {
@@ -164,6 +167,33 @@ this.loadDatabases();
 
         alert(
           'Connection Test Failed'
+        );
+      }
+    });
+  }
+
+  viewHealth(
+    databaseId: string
+  ): void {
+
+    this.http.get<any>(
+
+      `http://localhost:8080/api/databases/${databaseId}/health`
+
+    ).subscribe({
+
+      next: (response) => {
+
+        this.selectedHealth =
+          response;
+      },
+
+      error: (error) => {
+
+        console.error(error);
+
+        alert(
+          'Failed to load health information'
         );
       }
     });

@@ -106,7 +106,9 @@
 
           <th>Last Checked</th>
 
-          <th>Action</th>
+          <th>Connection Test</th>
+
+          <th>Health</th>
 
         </tr>
 
@@ -116,25 +118,15 @@
 
         <tr *ngFor="let db of databases">
 
-          <td>
-            {{ db.displayName }}
-          </td>
+          <td>{{ db.displayName }}</td>
 
-          <td>
-            {{ db.databaseType }}
-          </td>
+          <td>{{ db.databaseType }}</td>
 
-          <td>
-            {{ db.host }}
-          </td>
+          <td>{{ db.host }}</td>
 
-          <td>
-            {{ db.port }}
-          </td>
+          <td>{{ db.port }}</td>
 
-          <td>
-            {{ db.databaseName }}
-          </td>
+          <td>{{ db.databaseName }}</td>
 
           <td>
 
@@ -152,26 +144,20 @@
 
             <span
               class="connected"
-              *ngIf="
-                db.connectionStatus === 'CONNECTED'
-              "
+              *ngIf="db.connectionStatus === 'CONNECTED'"
             >
               🟢 CONNECTED
             </span>
 
             <span
               class="failed"
-              *ngIf="
-                db.connectionStatus === 'FAILED'
-              "
+              *ngIf="db.connectionStatus === 'FAILED'"
             >
               🔴 FAILED
             </span>
 
             <span
-              *ngIf="
-                !db.connectionStatus
-              "
+              *ngIf="!db.connectionStatus"
             >
               NOT TESTED
             </span>
@@ -194,11 +180,64 @@
 
           </td>
 
+          <td>
+
+            <button
+              (click)="viewHealth(db.id)"
+            >
+              View Health
+            </button>
+
+          </td>
+
         </tr>
 
       </tbody>
 
     </table>
+
+  </div>
+
+  <div
+    class="health-card"
+    *ngIf="selectedHealth"
+  >
+
+    <h2>
+      Database Health
+    </h2>
+
+    <p>
+
+      <strong>Version:</strong>
+
+      {{ selectedHealth.databaseVersion }}
+
+    </p>
+
+    <p>
+
+      <strong>Database Size:</strong>
+
+      {{ selectedHealth.databaseSize }}
+
+    </p>
+
+    <p>
+
+      <strong>Connection Status:</strong>
+
+      {{ selectedHealth.connectionStatus }}
+
+    </p>
+
+    <p>
+
+      <strong>Last Checked:</strong>
+
+      {{ selectedHealth.lastCheckedAt }}
+
+    </p>
 
   </div>
 
