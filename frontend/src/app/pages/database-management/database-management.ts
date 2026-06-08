@@ -145,16 +145,17 @@ implements OnInit {
 
         if (response.success) {
 
-          alert(
-            '🟢 Database Connection Successful'
-          );
+  alert(
+    '🟢 Database Connection Successful'
+  );
 
-        } else {
+  this.loadDatabases();
 
-          alert(
-            '🔴 ' + response.message
-          );
-        }
+} alert(
+  '🔴 ' + response.message
+);
+
+this.loadDatabases();
       },
 
       error: (error) => {

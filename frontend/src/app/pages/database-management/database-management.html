@@ -100,7 +100,13 @@
 
           <th>Database</th>
 
-          <th>Status</th>
+          <th>Monitoring</th>
+
+          <th>Connection</th>
+
+          <th>Last Checked</th>
+
+          <th>Action</th>
 
         </tr>
 
@@ -108,11 +114,7 @@
 
       <tbody>
 
-        <tr
-          *ngFor="
-            let db of databases
-          "
-        >
+        <tr *ngFor="let db of databases">
 
           <td>
             {{ db.displayName }}
@@ -136,27 +138,59 @@
 
           <td>
 
-            <span
-              *ngIf="
-                db.monitoringEnabled
-              "
-            >
+            <span *ngIf="db.monitoringEnabled">
               Enabled
             </span>
 
-            <span
-              *ngIf="
-                !db.monitoringEnabled
-              "
-            >
+            <span *ngIf="!db.monitoringEnabled">
               Disabled
             </span>
 
+          </td>
+
+          <td>
+
+            <span
+              class="connected"
+              *ngIf="
+                db.connectionStatus === 'CONNECTED'
+              "
+            >
+              🟢 CONNECTED
+            </span>
+
+            <span
+              class="failed"
+              *ngIf="
+                db.connectionStatus === 'FAILED'
+              "
+            >
+              🔴 FAILED
+            </span>
+
+            <span
+              *ngIf="
+                !db.connectionStatus
+              "
+            >
+              NOT TESTED
+            </span>
+
+          </td>
+
+          <td>
+
+            {{ db.lastCheckedAt || '-' }}
+
+          </td>
+
+          <td>
+
             <button
-  (click)="testConnection(db.id)"
->
-  Test Connection
-</button>
+              (click)="testConnection(db.id)"
+            >
+              Test Connection
+            </button>
 
           </td>
 
