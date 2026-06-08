@@ -16,4 +16,8 @@ public class DatabaseHealthResponse {
     private String connectionStatus;
 
     private String lastCheckedAt;
+
+    private String databaseUptime;
+
+private Integer tableCount;
 }
