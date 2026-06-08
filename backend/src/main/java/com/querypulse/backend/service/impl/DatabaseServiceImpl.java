@@ -266,11 +266,11 @@ public DatabaseHealthResponse getDatabaseHealth(
 
         String jdbcUrl =
                 "jdbc:postgresql://"
-                + database.getHost()
-                + ":"
-                + database.getPort()
-                + "/"
-                + database.getDatabaseName();
+                        + database.getHost()
+                        + ":"
+                        + database.getPort()
+                        + "/"
+                        + database.getDatabaseName();
 
         Connection connection =
                 DriverManager.getConnection(
@@ -279,15 +279,15 @@ public DatabaseHealthResponse getDatabaseHealth(
                         password
                 );
 
-        Statement statement =
+        String version = "Unknown";
+
+        Statement versionStatement =
                 connection.createStatement();
 
         ResultSet versionResult =
-                statement.executeQuery(
+                versionStatement.executeQuery(
                         "SELECT version()"
                 );
-
-        String version = "Unknown";
 
         if (versionResult.next()) {
 
@@ -295,8 +295,13 @@ public DatabaseHealthResponse getDatabaseHealth(
                     versionResult.getString(1);
         }
 
+        String size = "Unknown";
+
+        Statement sizeStatement =
+                connection.createStatement();
+
         ResultSet sizeResult =
-                statement.executeQuery(
+                sizeStatement.executeQuery(
                         """
                         SELECT pg_size_pretty(
                         pg_database_size(
@@ -304,13 +309,39 @@ public DatabaseHealthResponse getDatabaseHealth(
                         """
                 );
 
-        String size = "Unknown";
-
         if (sizeResult.next()) {
 
             size =
                     sizeResult.getString(1);
         }
+
+        Integer activeConnections = 0;
+
+        Statement connectionStatement =
+                connection.createStatement();
+
+        ResultSet connectionResult =
+                connectionStatement.executeQuery(
+                        """
+                        SELECT count(*)
+                        FROM pg_stat_activity
+                        """
+                );
+
+        if (connectionResult.next()) {
+
+            activeConnections =
+                    connectionResult.getInt(1);
+        }
+
+        versionResult.close();
+        versionStatement.close();
+
+        sizeResult.close();
+        sizeStatement.close();
+
+        connectionResult.close();
+        connectionStatement.close();
 
         connection.close();
 
@@ -320,6 +351,8 @@ public DatabaseHealthResponse getDatabaseHealth(
 
                 size,
 
+                activeConnections,
+
                 database.getConnectionStatus(),
 
                 database.getLastCheckedAt() != null
@@ -328,6 +361,8 @@ public DatabaseHealthResponse getDatabaseHealth(
         );
 
     } catch (Exception ex) {
+
+        ex.printStackTrace();
 
         throw new RuntimeException(
                 ex.getMessage()

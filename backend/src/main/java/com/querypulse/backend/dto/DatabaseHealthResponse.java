@@ -11,6 +11,8 @@ public class DatabaseHealthResponse {
 
     private String databaseSize;
 
+    private Integer activeConnections;
+
     private String connectionStatus;
 
     private String lastCheckedAt;
