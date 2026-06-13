@@ -325,6 +325,7 @@ public DatabaseHealthResponse getDatabaseHealth(
                         """
                         SELECT count(*)
                         FROM pg_stat_activity
+                        WHERE state='active'
                         """
                 );
 
@@ -332,6 +333,44 @@ public DatabaseHealthResponse getDatabaseHealth(
 
             activeConnections =
                     connectionResult.getInt(1);
+        }
+
+        String uptime = "-";
+
+        Statement uptimeStatement =
+                connection.createStatement();
+
+        ResultSet uptimeResult =
+                uptimeStatement.executeQuery(
+                        """
+                        SELECT now() - pg_postmaster_start_time()
+                        """
+                );
+
+        if (uptimeResult.next()) {
+
+            uptime =
+                    uptimeResult.getString(1);
+        }
+
+        Integer tableCount = 0;
+
+        Statement tableStatement =
+                connection.createStatement();
+
+        ResultSet tableResult =
+                tableStatement.executeQuery(
+                        """
+                        SELECT count(*)
+                        FROM information_schema.tables
+                        WHERE table_schema='public'
+                        """
+                );
+
+        if (tableResult.next()) {
+
+            tableCount =
+                    tableResult.getInt(1);
         }
 
         versionResult.close();
@@ -342,6 +381,12 @@ public DatabaseHealthResponse getDatabaseHealth(
 
         connectionResult.close();
         connectionStatement.close();
+
+        uptimeResult.close();
+        uptimeStatement.close();
+
+        tableResult.close();
+        tableStatement.close();
 
         connection.close();
 
@@ -357,7 +402,11 @@ public DatabaseHealthResponse getDatabaseHealth(
 
                 database.getLastCheckedAt() != null
                         ? database.getLastCheckedAt().toString()
-                        : "-"
+                        : "-",
+
+                uptime,
+
+                tableCount
         );
 
     } catch (Exception ex) {
