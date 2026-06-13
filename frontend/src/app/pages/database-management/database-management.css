@@ -139,7 +139,7 @@ th {
   display: grid;
 
   grid-template-columns:
-      repeat(4, 1fr);
+      repeat(3, 1fr);
 
   gap: 20px;
 
@@ -191,3 +191,4 @@ th {
 
   color: red;
 }
+

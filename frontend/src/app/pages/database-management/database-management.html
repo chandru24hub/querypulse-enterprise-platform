@@ -210,7 +210,9 @@
     </h3>
 
     <div class="metric-value">
+
       {{ selectedHealth.activeConnections }}
+
     </div>
 
   </div>
@@ -222,7 +224,37 @@
     </h3>
 
     <div class="metric-value">
+
       {{ selectedHealth.databaseSize }}
+
+    </div>
+
+  </div>
+
+  <div class="metric-card">
+
+    <h3>
+      Table Count
+    </h3>
+
+    <div class="metric-value">
+
+      {{ selectedHealth.tableCount }}
+
+    </div>
+
+  </div>
+
+  <div class="metric-card">
+
+    <h3>
+      Database Uptime
+    </h3>
+
+    <div class="metric-value">
+
+      {{ selectedHealth.databaseUptime }}
+
     </div>
 
   </div>
@@ -235,10 +267,12 @@
 
     <div
       class="metric-value"
-      [class.connected]="selectedHealth.connectionStatus === 'CONNECTED'"
-      [class.failed]="selectedHealth.connectionStatus === 'FAILED'"
+      [class.connected]="selectedHealth.connectionStatus==='CONNECTED'"
+      [class.failed]="selectedHealth.connectionStatus==='FAILED'"
     >
+
       {{ selectedHealth.connectionStatus }}
+
     </div>
 
   </div>
@@ -249,34 +283,15 @@
       PostgreSQL Version
     </h3>
 
-    <div class="metric-value version-text">
+    <div
+      class="metric-value version-text"
+    >
 
       {{ selectedHealth.databaseVersion }}
 
     </div>
 
   </div>
-
-</div>
-
-<div
-  class="health-card"
-  *ngIf="selectedHealth"
->
-
-  <h2>
-    Additional Details
-  </h2>
-
-  <p>
-
-    <strong>
-      Last Checked:
-    </strong>
-
-    {{ selectedHealth.lastCheckedAt }}
-
-  </p>
 
 </div>
 
