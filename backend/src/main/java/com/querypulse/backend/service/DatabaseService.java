@@ -11,6 +11,9 @@ import com.querypulse.backend.entity.MonitoredDatabase;
 
 public interface DatabaseService {
 
+   void refreshDatabaseMetrics(
+        UUID databaseId
+);
     MonitoredDatabase createDatabase(
             CreateDatabaseRequest request
     );
@@ -24,4 +27,8 @@ public interface DatabaseService {
     DatabaseHealthResponse getDatabaseHealth(
             UUID databaseId
     );
+
+    void saveHealthHistory(
+        UUID databaseId
+);
 }

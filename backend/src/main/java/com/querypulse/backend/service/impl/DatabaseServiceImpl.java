@@ -6,9 +6,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
+import com.querypulse.backend.repository.DatabaseHealthHistoryRepository;
 import com.querypulse.backend.security.AesEncryptionService;
 import org.springframework.stereotype.Service;
+import com.querypulse.backend.entity.DatabaseHealthHistory;
 
 import com.querypulse.backend.dto.CreateDatabaseRequest;
 import com.querypulse.backend.dto.DatabaseResponse;
@@ -35,6 +36,9 @@ implements DatabaseService {
 
     private final AesEncryptionService
             aesEncryptionService;
+
+ private final DatabaseHealthHistoryRepository
+        databaseHealthHistoryRepository;
 
     @Override
     public MonitoredDatabase createDatabase(
@@ -417,5 +421,99 @@ public DatabaseHealthResponse getDatabaseHealth(
                 ex.getMessage()
         );
     }
+}
+
+@Override
+public void refreshDatabaseMetrics(
+        UUID databaseId
+) {
+
+    DatabaseHealthResponse health =
+            getDatabaseHealth(
+                    databaseId
+            );
+
+    MonitoredDatabase database =
+            monitoredDatabaseRepository
+                    .findById(databaseId)
+                    .orElseThrow(
+                            () -> new RuntimeException(
+                                    "Database not found"
+                            )
+                    );
+
+    database.setActiveConnections(
+            health.getActiveConnections()
+    );
+
+    database.setDatabaseSize(
+            health.getDatabaseSize()
+    );
+
+    database.setDatabaseUptime(
+            health.getDatabaseUptime()
+    );
+
+    database.setTableCount(
+            health.getTableCount()
+    );
+
+    database.setLastCheckedAt(
+            LocalDateTime.now()
+    );
+
+    monitoredDatabaseRepository.save(
+            database
+    );
+}
+
+@Override
+public void saveHealthHistory(
+        UUID databaseId
+) {
+
+    DatabaseHealthResponse health =
+            getDatabaseHealth(
+                    databaseId
+            );
+
+    DatabaseHealthHistory history =
+            DatabaseHealthHistory
+                    .builder()
+
+                    .databaseId(
+                            databaseId
+                    )
+
+                    .recordedAt(
+                            LocalDateTime.now()
+                    )
+
+                    .connectionStatus(
+                            health.getConnectionStatus()
+                    )
+
+                    .activeConnections(
+                            health.getActiveConnections()
+                    )
+
+                    .databaseSize(
+                            health.getDatabaseSize()
+                    )
+
+                    .databaseUptime(
+                            health.getDatabaseUptime()
+                    )
+
+                    .tableCount(
+                            health.getTableCount()
+                    )
+
+                    .build();
+
+    databaseHealthHistoryRepository
+            .save(
+                    history
+            );
 }
 }
