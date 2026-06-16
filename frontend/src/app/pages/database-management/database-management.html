@@ -91,23 +91,14 @@
         <tr>
 
           <th>Name</th>
-
           <th>Type</th>
-
           <th>Host</th>
-
           <th>Port</th>
-
           <th>Database</th>
-
           <th>Monitoring</th>
-
           <th>Connection</th>
-
           <th>Last Checked</th>
-
           <th>Connection Test</th>
-
           <th>Health</th>
 
         </tr>
@@ -198,20 +189,172 @@
 
   </div>
 
-<div
+  <!-- Metrics Dashboard -->
+
+  <div
+    class="metrics-container"
+    *ngIf="selectedHealth"
+  >
+
+    <div class="metric-card">
+
+      <h3>
+        Active Connections
+      </h3>
+
+      <div class="metric-value">
+
+        {{ selectedHealth.activeConnections }}
+
+      </div>
+
+    </div>
+
+    <div class="metric-card">
+
+      <h3>
+        Database Size
+      </h3>
+
+      <div class="metric-value">
+
+        {{ selectedHealth.databaseSize }}
+
+      </div>
+
+    </div>
+
+    <div class="metric-card">
+
+      <h3>
+        Table Count
+      </h3>
+
+      <div class="metric-value">
+
+        {{ selectedHealth.tableCount }}
+
+      </div>
+
+    </div>
+
+    <div class="metric-card">
+
+      <h3>
+        Database Uptime
+      </h3>
+
+      <div class="metric-value">
+
+        {{ selectedHealth.databaseUptime }}
+
+      </div>
+
+    </div>
+
+    <div class="metric-card">
+
+      <h3>
+        Connection Status
+      </h3>
+
+      <div
+        class="metric-value"
+        [class.connected]="selectedHealth.connectionStatus==='CONNECTED'"
+        [class.failed]="selectedHealth.connectionStatus==='FAILED'"
+      >
+
+        {{ selectedHealth.connectionStatus }}
+
+      </div>
+
+    </div>
+
+    <div class="metric-card">
+
+      <h3>
+        PostgreSQL Version
+      </h3>
+
+      <div
+        class="metric-value version-text"
+      >
+
+        {{ selectedHealth.databaseVersion }}
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Active Connections Chart -->
+
+  <div
+    class="health-card"
+    *ngIf="historyData.length > 0"
+  >
+
+    <h2>
+
+      Active Connections Trend
+
+    </h2>
+
+    <canvas
+      id="connectionChart"
+    >
+    </canvas>
+
+    <div class="health-card">
+
+    <h2>
+
+        Database Size Trend
+
+    </h2>
+
+    <canvas
+        id="sizeChart"
+    >
+    </canvas>
+
+</div>
+
+
+<div class="health-card">
+
+    <h2>
+
+        Availability Trend
+
+    </h2>
+
+    <canvas
+        id="statusChart"
+    >
+    </canvas>
+
+</div>
+
+  </div>
+
+  <div
   class="metrics-container"
-  *ngIf="selectedHealth"
+  *ngIf="selectedQueryAnalysis"
 >
 
   <div class="metric-card">
 
     <h3>
-      Active Connections
+
+      Active Sessions
+
     </h3>
 
     <div class="metric-value">
 
-      {{ selectedHealth.activeConnections }}
+      {{ selectedQueryAnalysis.activeSessions }}
 
     </div>
 
@@ -220,12 +363,14 @@
   <div class="metric-card">
 
     <h3>
-      Database Size
+
+      Idle Sessions
+
     </h3>
 
     <div class="metric-value">
 
-      {{ selectedHealth.databaseSize }}
+      {{ selectedQueryAnalysis.idleSessions }}
 
     </div>
 
@@ -234,60 +379,14 @@
   <div class="metric-card">
 
     <h3>
-      Table Count
+
+      Total Sessions
+
     </h3>
 
     <div class="metric-value">
 
-      {{ selectedHealth.tableCount }}
-
-    </div>
-
-  </div>
-
-  <div class="metric-card">
-
-    <h3>
-      Database Uptime
-    </h3>
-
-    <div class="metric-value">
-
-      {{ selectedHealth.databaseUptime }}
-
-    </div>
-
-  </div>
-
-  <div class="metric-card">
-
-    <h3>
-      Connection Status
-    </h3>
-
-    <div
-      class="metric-value"
-      [class.connected]="selectedHealth.connectionStatus==='CONNECTED'"
-      [class.failed]="selectedHealth.connectionStatus==='FAILED'"
-    >
-
-      {{ selectedHealth.connectionStatus }}
-
-    </div>
-
-  </div>
-
-  <div class="metric-card">
-
-    <h3>
-      PostgreSQL Version
-    </h3>
-
-    <div
-      class="metric-value version-text"
-    >
-
-      {{ selectedHealth.databaseVersion }}
+      {{ selectedQueryAnalysis.totalSessions }}
 
     </div>
 
