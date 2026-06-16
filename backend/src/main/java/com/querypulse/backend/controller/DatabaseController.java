@@ -13,6 +13,9 @@ import com.querypulse.backend.dto.ConnectionTestResponse;
 import com.querypulse.backend.dto.DatabaseHealthResponse;
 import lombok.RequiredArgsConstructor;
 
+import com.querypulse.backend.dto.DatabaseHealthHistoryResponse;
+import com.querypulse.backend.dto.QueryAnalyzerResponse;
+
 @RestController
 @RequestMapping("/api/databases")
 @RequiredArgsConstructor
@@ -61,5 +64,33 @@ public DatabaseHealthResponse getDatabaseHealth(
 
     return databaseService
             .getDatabaseHealth(id);
+}
+
+@GetMapping("/{id}/history")
+public List<DatabaseHealthHistoryResponse>
+getDatabaseHistory(
+
+        @PathVariable
+        UUID id
+) {
+
+    return databaseService
+            .getDatabaseHistory(
+                    id
+            );
+}
+
+@GetMapping("/{id}/query-analysis")
+public QueryAnalyzerResponse
+getQueryAnalysis(
+
+        @PathVariable
+        UUID id
+) {
+
+    return databaseService
+            .getQueryAnalysis(
+                    id
+            );
 }
 }

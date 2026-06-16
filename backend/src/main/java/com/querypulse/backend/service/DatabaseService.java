@@ -5,9 +5,11 @@ import java.util.UUID;
 
 import com.querypulse.backend.dto.ConnectionTestResponse;
 import com.querypulse.backend.dto.CreateDatabaseRequest;
+import com.querypulse.backend.dto.DatabaseHealthHistoryResponse;
 import com.querypulse.backend.dto.DatabaseHealthResponse;
 import com.querypulse.backend.dto.DatabaseResponse;
 import com.querypulse.backend.entity.MonitoredDatabase;
+import com.querypulse.backend.dto.QueryAnalyzerResponse;
 
 public interface DatabaseService {
 
@@ -29,6 +31,16 @@ public interface DatabaseService {
     );
 
     void saveHealthHistory(
+        UUID databaseId
+);
+
+List<DatabaseHealthHistoryResponse>
+getDatabaseHistory(
+        UUID databaseId
+);
+
+QueryAnalyzerResponse
+getQueryAnalysis(
         UUID databaseId
 );
 }

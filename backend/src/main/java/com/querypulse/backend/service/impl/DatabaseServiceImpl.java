@@ -10,6 +10,7 @@ import com.querypulse.backend.repository.DatabaseHealthHistoryRepository;
 import com.querypulse.backend.security.AesEncryptionService;
 import org.springframework.stereotype.Service;
 import com.querypulse.backend.entity.DatabaseHealthHistory;
+import com.querypulse.backend.dto.QueryAnalyzerResponse;
 
 import com.querypulse.backend.dto.CreateDatabaseRequest;
 import com.querypulse.backend.dto.DatabaseResponse;
@@ -25,6 +26,11 @@ import java.sql.ResultSet;
 import com.querypulse.backend.dto.DatabaseHealthResponse;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.stream.Collectors;
+
+import com.querypulse.backend.dto.DatabaseHealthHistoryResponse;
+import com.querypulse.backend.entity.DatabaseHealthHistory;
 
 @Service
 @RequiredArgsConstructor
@@ -516,4 +522,143 @@ public void saveHealthHistory(
                     history
             );
 }
+
+@Override
+public List<DatabaseHealthHistoryResponse>
+getDatabaseHistory(
+        UUID databaseId
+) {
+
+    return databaseHealthHistoryRepository
+            .findByDatabaseIdOrderByRecordedAtAsc(
+                    databaseId
+            )
+            .stream()
+            .map(history ->
+
+                    new DatabaseHealthHistoryResponse(
+
+                            history
+                                    .getRecordedAt()
+                                    .toString(),
+
+                            history
+                                    .getActiveConnections(),
+
+                            history
+                                    .getDatabaseSize(),
+
+                            history
+                                    .getConnectionStatus()
+                    )
+            )
+            .collect(
+                    Collectors.toList()
+            );
+}
+@Override
+public QueryAnalyzerResponse getQueryAnalysis(
+        UUID databaseId
+) {
+
+    MonitoredDatabase database =
+            monitoredDatabaseRepository
+                    .findById(databaseId)
+                    .orElseThrow(
+                            () -> new RuntimeException(
+                                    "Database not found"
+                            )
+                    );
+
+    String password =
+            aesEncryptionService.decrypt(
+                    database.getPassword()
+            );
+
+    String jdbcUrl =
+        "jdbc:postgresql://"
+                + database.getHost()
+                + ":"
+                + database.getPort()
+                + "/"
+                + database.getDatabaseName();
+
+    int activeSessions = 0;
+    int idleSessions = 0;
+    int totalSessions = 0;
+
+    try (
+
+            Connection connection =
+                    DriverManager.getConnection(
+                            jdbcUrl,
+                            database.getUsername(),
+                            password
+                    );
+
+            Statement statement =
+                    connection.createStatement();
+
+            ResultSet resultSet =
+                    statement.executeQuery(
+                            """
+                            SELECT state
+                            FROM pg_stat_activity
+                            """
+                    )
+
+    ) {
+
+        while (resultSet.next()) {
+
+            totalSessions++;
+
+            String state =
+                    resultSet.getString(
+                            "state"
+                    );
+
+            if (
+                    "active".equalsIgnoreCase(
+                            state
+                    )
+            ) {
+
+                activeSessions++;
+
+            } else if (
+                    "idle".equalsIgnoreCase(
+                            state
+                    )
+            ) {
+
+                idleSessions++;
+
+            }
+
+        }
+
+    } catch (Exception ex) {
+
+        throw new RuntimeException(
+                ex.getMessage()
+        );
+
+    }
+
+    return QueryAnalyzerResponse
+            .builder()
+            .activeSessions(
+                    activeSessions
+            )
+            .idleSessions(
+                    idleSessions
+            )
+            .totalSessions(
+                    totalSessions
+            )
+            .build();
+
+}
+
 }
