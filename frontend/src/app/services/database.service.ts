@@ -78,4 +78,27 @@ export class DatabaseService {
 
   );
 }
+
+getSlowQueries(
+  databaseId: string
+): Observable<any[]> {
+
+  return this.http.get<any[]>(
+
+    `${this.apiUrl}/${databaseId}/slow-queries`
+
+  );
+}
+
+getAlerts(
+  databaseId: string
+): Observable<any[]> {
+
+  return this.http.get<any[]>(
+
+    `${this.apiUrl}/${databaseId}/alerts`
+
+  );
+
+}
 }

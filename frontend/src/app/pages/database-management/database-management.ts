@@ -53,6 +53,10 @@ implements OnInit {
 
   selectedQueryAnalysis: any = null;
 
+  slowQueries: any[] = [];
+
+  alerts: any[] = [];
+
   connectionChart: any;
 
   sizeChart: any;
@@ -231,11 +235,20 @@ statusChart: any;
             response;
 
           this.loadHistory(
-            databaseId
-          );
-          this.loadQueryAnalysis(
-         databaseId
-        );
+  databaseId
+);
+
+this.loadQueryAnalysis(
+  databaseId
+);
+
+this.loadSlowQueries(
+  databaseId
+);
+
+this.loadAlerts(
+    databaseId
+);
         },
 
         error: (error) => {
@@ -309,127 +322,165 @@ renderChart(): void {
                   : 0
       );
 
-  //--------------------------------
+  setTimeout(() => {
 
-  if (this.connectionChart) {
+      //-----------------------------
+      // Connection Chart
+      //-----------------------------
 
-      this.connectionChart.destroy();
+      const connectionCanvas =
+          document.getElementById(
+              'connectionChart'
+          ) as HTMLCanvasElement;
 
-  }
+      if (connectionCanvas) {
 
-  this.connectionChart =
-      new Chart(
-          'connectionChart',
-          {
-              type: 'line',
+          if (this.connectionChart) {
 
-              data: {
-
-                  labels,
-
-                  datasets: [
-
-                      {
-
-                          label:
-                              'Active Connections',
-
-                          data:
-                              activeConnections,
-
-                          tension: 0.3
-
-                      }
-
-                  ]
-
-              }
+              this.connectionChart.destroy();
 
           }
 
-      );
+          this.connectionChart =
+              new Chart(
+                  connectionCanvas,
+                  {
 
-  //--------------------------------
+                      type: 'line',
 
-  if (this.sizeChart) {
+                      data: {
 
-      this.sizeChart.destroy();
+                          labels,
 
-  }
+                          datasets: [
 
-  this.sizeChart =
-      new Chart(
-          'sizeChart',
-          {
+                              {
 
-              type: 'line',
+                                  label:
+                                      'Active Connections',
 
-              data: {
+                                  data:
+                                      activeConnections,
 
-                  labels,
+                                  tension: 0.3
 
-                  datasets: [
+                              }
 
-                      {
-
-                          label:
-                              'Database Size (kB)',
-
-                          data:
-                              databaseSizes,
-
-                          tension: 0.3
+                          ]
 
                       }
 
-                  ]
+                  }
 
-              }
+              );
+
+      }
+
+      //-----------------------------
+      // Size Chart
+      //-----------------------------
+
+      const sizeCanvas =
+          document.getElementById(
+              'sizeChart'
+          ) as HTMLCanvasElement;
+
+      if (sizeCanvas) {
+
+          if (this.sizeChart) {
+
+              this.sizeChart.destroy();
 
           }
 
-      );
+          this.sizeChart =
+              new Chart(
+                  sizeCanvas,
+                  {
 
-  //--------------------------------
+                      type: 'line',
 
-  if (this.statusChart) {
+                      data: {
 
-      this.statusChart.destroy();
+                          labels,
 
-  }
+                          datasets: [
 
-  this.statusChart =
-      new Chart(
-          'statusChart',
-          {
+                              {
 
-              type: 'line',
+                                  label:
+                                      'Database Size (kB)',
 
-              data: {
+                                  data:
+                                      databaseSizes,
 
-                  labels,
+                                  tension: 0.3
 
-                  datasets: [
+                              }
 
-                      {
-
-                          label:
-                              'Availability',
-
-                          data:
-                              statuses,
-
-                          tension: 0.3
+                          ]
 
                       }
 
-                  ]
+                  }
 
-              }
+              );
+
+      }
+
+      //-----------------------------
+      // Status Chart
+      //-----------------------------
+
+      const statusCanvas =
+          document.getElementById(
+              'statusChart'
+          ) as HTMLCanvasElement;
+
+      if (statusCanvas) {
+
+          if (this.statusChart) {
+
+              this.statusChart.destroy();
 
           }
 
-      );
+          this.statusChart =
+              new Chart(
+                  statusCanvas,
+                  {
+
+                      type: 'line',
+
+                      data: {
+
+                          labels,
+
+                          datasets: [
+
+                              {
+
+                                  label:
+                                      'Availability',
+
+                                  data:
+                                      statuses,
+
+                                  tension: 0.3
+
+                              }
+
+                          ]
+
+                      }
+
+                  }
+
+              );
+
+      }
+
+  }, 100);
 
 }
 
@@ -457,6 +508,76 @@ loadQueryAnalysis(
               );
 
           }
+
+      });
+
+}
+
+loadSlowQueries(
+  databaseId: string
+): void {
+
+  this.databaseService
+      .getSlowQueries(
+          databaseId
+      )
+      .subscribe({
+
+          next: (response) => {
+
+              this.slowQueries =
+                  response;
+
+          },
+
+          error: (error) => {
+
+              console.error(
+                  error
+              );
+
+          }
+
+      });
+
+}
+
+loadAlerts(
+  databaseId: string
+): void {
+
+  console.log(
+    "Database ID sent:",
+    databaseId
+  );
+
+  this.databaseService
+      .getAlerts(databaseId)
+      .subscribe({
+
+        next: (response) => {
+
+          console.log(
+            "Alerts API response:",
+            response
+          );
+
+          this.alerts = response;
+
+          console.log(
+            "alerts length:",
+            this.alerts.length
+          );
+
+        },
+
+        error: (error) => {
+
+          console.error(
+            error
+          );
+
+        }
 
       });
 

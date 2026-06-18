@@ -5,11 +5,15 @@ import java.util.UUID;
 
 import com.querypulse.backend.dto.ConnectionTestResponse;
 import com.querypulse.backend.dto.CreateDatabaseRequest;
+import com.querypulse.backend.dto.DatabaseAlertResponse;
 import com.querypulse.backend.dto.DatabaseHealthHistoryResponse;
 import com.querypulse.backend.dto.DatabaseHealthResponse;
 import com.querypulse.backend.dto.DatabaseResponse;
 import com.querypulse.backend.entity.MonitoredDatabase;
 import com.querypulse.backend.dto.QueryAnalyzerResponse;
+import com.querypulse.backend.dto.SlowQueryResponse;
+import com.querypulse.backend.dto.DatabaseAlertResponse;
+
 
 public interface DatabaseService {
 
@@ -41,6 +45,16 @@ getDatabaseHistory(
 
 QueryAnalyzerResponse
 getQueryAnalysis(
+        UUID databaseId
+);
+
+List<SlowQueryResponse>
+getSlowQueries(
+        UUID databaseId
+);
+
+List<DatabaseAlertResponse>
+getAlerts(
         UUID databaseId
 );
 }

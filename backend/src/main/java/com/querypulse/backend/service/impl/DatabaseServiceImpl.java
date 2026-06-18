@@ -3,6 +3,7 @@ package com.querypulse.backend.service.impl;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -31,6 +32,11 @@ import java.util.stream.Collectors;
 
 import com.querypulse.backend.dto.DatabaseHealthHistoryResponse;
 import com.querypulse.backend.entity.DatabaseHealthHistory;
+import com.querypulse.backend.dto.SlowQueryResponse;
+
+import com.querypulse.backend.entity.DatabaseAlert;
+import com.querypulse.backend.dto.DatabaseAlertResponse;
+import com.querypulse.backend.repository.DatabaseAlertRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +51,9 @@ implements DatabaseService {
 
  private final DatabaseHealthHistoryRepository
         databaseHealthHistoryRepository;
+
+        private final DatabaseAlertRepository
+        databaseAlertRepository;
 
     @Override
     public MonitoredDatabase createDatabase(
@@ -658,6 +667,176 @@ public QueryAnalyzerResponse getQueryAnalysis(
                     totalSessions
             )
             .build();
+
+}
+
+@Override
+public List<SlowQueryResponse>
+getSlowQueries(
+        UUID databaseId
+) {
+
+    MonitoredDatabase database =
+            monitoredDatabaseRepository
+                    .findById(databaseId)
+                    .orElseThrow(
+                            () -> new RuntimeException(
+                                    "Database not found"
+                            )
+                    );
+
+    String password =
+            aesEncryptionService.decrypt(
+                    database.getPassword()
+            );
+
+    String jdbcUrl =
+            "jdbc:postgresql://"
+                    + database.getHost()
+                    + ":"
+                    + database.getPort()
+                    + "/"
+                    + database.getDatabaseName();
+
+    List<SlowQueryResponse> slowQueries =
+            new ArrayList<>();
+
+    try (
+
+            Connection connection =
+                    DriverManager.getConnection(
+                            jdbcUrl,
+                            database.getUsername(),
+                            password
+                    );
+
+            Statement statement =
+                    connection.createStatement();
+
+            ResultSet resultSet =
+                    statement.executeQuery(
+                            """
+                            SELECT
+                            pid,
+                            usename,
+                            datname,
+                            state,
+                            now() - query_start AS running_time,
+                            query
+                            FROM pg_stat_activity
+                            WHERE state='active'
+                            ORDER BY query_start
+                            """
+                    )
+
+    ) {
+
+        while (
+                resultSet.next()
+        ) {
+
+            slowQueries.add(
+
+                    SlowQueryResponse
+                            .builder()
+
+                            .pid(
+                                    resultSet.getInt(
+                                            "pid"
+                                    )
+                            )
+
+                            .username(
+                                    resultSet.getString(
+                                            "usename"
+                                    )
+                            )
+
+                            .databaseName(
+                                    resultSet.getString(
+                                            "datname"
+                                    )
+                            )
+
+                            .state(
+                                    resultSet.getString(
+                                            "state"
+                                    )
+                            )
+
+                            .runningTime(
+                                    resultSet.getString(
+                                            "running_time"
+                                    )
+                            )
+
+                            .query(
+                                    resultSet.getString(
+                                            "query"
+                                    )
+                            )
+
+                            .build()
+            );
+
+        }
+
+    } catch (Exception ex) {
+
+        throw new RuntimeException(
+                ex.getMessage()
+        );
+
+    }
+
+    return slowQueries;
+
+}
+
+@Override
+public List<DatabaseAlertResponse>
+getAlerts(
+        UUID databaseId
+) {
+
+    return databaseAlertRepository
+
+            .findByDatabaseIdOrderByCreatedAtDesc(
+                    databaseId
+            )
+
+            .stream()
+
+            .map(
+
+                    alert ->
+
+                            DatabaseAlertResponse
+
+                                    .builder()
+
+                                    .severity(
+                                            alert.getSeverity()
+                                    )
+
+                                    .alertType(
+                                            alert.getAlertType()
+                                    )
+
+                                    .message(
+                                            alert.getMessage()
+                                    )
+
+                                    .createdAt(
+                                            alert.getCreatedAt()
+                                                    .toString()
+                                    )
+
+                                    .build()
+
+            )
+
+            .toList();
 
 }
 

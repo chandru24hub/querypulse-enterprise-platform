@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 
 import com.querypulse.backend.dto.DatabaseHealthHistoryResponse;
 import com.querypulse.backend.dto.QueryAnalyzerResponse;
+import com.querypulse.backend.dto.SlowQueryResponse;
+import com.querypulse.backend.dto.DatabaseAlertResponse;
 
 @RestController
 @RequestMapping("/api/databases")
@@ -92,5 +94,34 @@ getQueryAnalysis(
             .getQueryAnalysis(
                     id
             );
+}
+
+@GetMapping("/{id}/slow-queries")
+public List<SlowQueryResponse>
+getSlowQueries(
+
+        @PathVariable
+        UUID id
+) {
+
+    return databaseService
+            .getSlowQueries(
+                    id
+            );
+}
+
+@GetMapping("/{id}/alerts")
+public List<DatabaseAlertResponse>
+getAlerts(
+
+        @PathVariable
+        UUID id
+) {
+
+    return databaseService
+            .getAlerts(
+                    id
+            );
+
 }
 }

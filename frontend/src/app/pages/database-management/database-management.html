@@ -290,56 +290,68 @@
 
   <!-- Active Connections Chart -->
 
-  <div
-    class="health-card"
-    *ngIf="historyData.length > 0"
+  <!-- Charts -->
+
+<div
+  class="health-card"
+  *ngIf="historyData.length > 0"
+>
+
+  <h2>
+
+    Active Connections Trend
+
+  </h2>
+
+  <canvas
+    id="connectionChart"
   >
-
-    <h2>
-
-      Active Connections Trend
-
-    </h2>
-
-    <canvas
-      id="connectionChart"
-    >
-    </canvas>
-
-    <div class="health-card">
-
-    <h2>
-
-        Database Size Trend
-
-    </h2>
-
-    <canvas
-        id="sizeChart"
-    >
-    </canvas>
+  </canvas>
 
 </div>
 
 
-<div class="health-card">
+<div
+  class="health-card"
+  *ngIf="historyData.length > 0"
+>
 
-    <h2>
+  <h2>
 
-        Availability Trend
+    Database Size Trend
 
-    </h2>
+  </h2>
 
-    <canvas
-        id="statusChart"
-    >
-    </canvas>
+  <canvas
+    id="sizeChart"
+  >
+  </canvas>
 
 </div>
 
-  </div>
 
-  <div
+<div
+  class="health-card"
+  *ngIf="historyData.length > 0"
+>
+
+  <h2>
+
+    Availability Trend
+
+  </h2>
+
+  <canvas
+    id="statusChart"
+  >
+  </canvas>
+
+</div>
+
+
+<!-- Query Analyzer -->
+
+<div
   class="metrics-container"
   *ngIf="selectedQueryAnalysis"
 >
@@ -389,6 +401,144 @@
       {{ selectedQueryAnalysis.totalSessions }}
 
     </div>
+
+  </div>
+
+</div>
+
+
+<!-- Slow Queries -->
+
+<!-- Slow Queries -->
+
+<div
+  class="table-card"
+  *ngIf="slowQueries.length > 0"
+>
+
+  <h2>
+
+    Slow Queries
+
+  </h2>
+
+  <table>
+
+    <thead>
+
+      <tr>
+
+        <th>PID</th>
+
+        <th>User</th>
+
+        <th>State</th>
+
+        <th>Running Time</th>
+
+        <th>Query</th>
+
+      </tr>
+
+    </thead>
+
+    <tbody>
+
+      <tr
+        *ngFor="let query of slowQueries"
+      >
+
+        <td>
+
+          {{ query.pid }}
+
+        </td>
+
+        <td>
+
+          {{ query.username }}
+
+        </td>
+
+        <td>
+
+          {{ query.state }}
+
+        </td>
+
+        <td>
+
+          {{ query.runningTime }}
+
+        </td>
+
+        <td>
+
+          <pre>
+
+{{ query.query }}
+
+          </pre>
+
+        </td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>
+
+
+
+<!-- Alerts -->
+
+<div
+  class="alerts-container"
+  *ngIf="alerts.length > 0"
+>
+
+  <h2>
+
+    Alerts
+
+  </h2>
+
+  <div
+    class="alert-card"
+    *ngFor="let alert of alerts"
+  >
+
+    <h3>
+
+      {{ alert.alertType }}
+
+    </h3>
+
+    <p>
+
+      Severity :
+
+      <b>
+
+        {{ alert.severity }}
+
+      </b>
+
+    </p>
+
+    <p>
+
+      {{ alert.message }}
+
+    </p>
+
+    <p>
+
+      {{ alert.createdAt }}
+
+    </p>
 
   </div>
 

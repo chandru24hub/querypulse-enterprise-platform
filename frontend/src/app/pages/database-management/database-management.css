@@ -224,3 +224,40 @@ canvas {
   }
 
 }
+
+.alerts-container {
+
+    margin-top: 30px;
+
+}
+
+.alert-card {
+
+    background: white;
+
+    border-left: 6px solid red;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+
+    border-radius: 12px;
+
+    box-shadow:
+        0 2px 10px rgba(0,0,0,0.1);
+
+}
+
+.alert-card h3 {
+
+    color: red;
+
+    margin-bottom: 10px;
+
+}
+
+.alert-card p {
+
+    margin: 8px 0;
+
+}
