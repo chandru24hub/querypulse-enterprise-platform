@@ -1,54 +1,77 @@
-<div class="login-container">
+<div class="auth">
 
-  <div class="login-card">
+  <!-- Brand panel -->
+  <aside class="auth__brand">
+    <div class="auth__brand-top">
+      <div class="auth__logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12h4l2 6 4-14 2 8h6" />
+        </svg>
+        <span>QueryPulse</span>
+      </div>
+    </div>
 
-    <h1>QueryPulse</h1>
+    <div class="auth__brand-mid">
+      <h2>Real-time visibility into every database you run.</h2>
+      <p>Monitor connections, track slow queries, and catch incidents before they reach production.</p>
 
-    <p>Enterprise PostgreSQL Monitoring Platform</p>
+      <ul class="auth__features">
+        <li><span class="auth__check">✓</span> Live health &amp; connection metrics</li>
+        <li><span class="auth__check">✓</span> Slow-query detection &amp; alerting</li>
+        <li><span class="auth__check">✓</span> Multi-engine support — Postgres, MySQL, Oracle</li>
+      </ul>
+    </div>
 
-    <form (ngSubmit)="onLogin()">
+    <div class="auth__brand-foot">
+      <div class="auth__pulse"><span class="qp-badge__dot"></span> All systems operational</div>
+    </div>
+  </aside>
 
-      <input
-        type="email"
-        placeholder="Enter Email"
-        [(ngModel)]="email"
-        name="email"
-        required
-      />
+  <!-- Form panel -->
+  <main class="auth__panel">
+    <div class="auth__form-wrap">
 
-      <input
-        type="password"
-        placeholder="Enter Password"
-        [(ngModel)]="password"
-        name="password"
-        required
-      />
-
-      <button type="submit" [disabled]="loading">
-        {{ loading ? 'Signing In...' : 'Login' }}
-      </button>
-
-      <p class="register-text">
-
-  Don't have an account?
-
-  <span
-    class="register-link"
-    routerLink="/register"
-  >
-    Register
-  </span>
-
-</p>
-
-      <div class="error-message" *ngIf="errorMessage">
-        {{ errorMessage }}
+      <div class="auth__heading">
+        <h1>Welcome back</h1>
+        <p>Sign in to your monitoring workspace.</p>
       </div>
 
+      <form (ngSubmit)="onLogin()" class="auth__form">
 
+        <div class="qp-field">
+          <label class="qp-label" for="email">Email address</label>
+          <input id="email" class="qp-input" type="email" placeholder="you@company.com"
+                 [(ngModel)]="email" name="email" required />
+        </div>
 
-    </form>
+        <div class="qp-field">
+          <label class="qp-label" for="password">Password</label>
+          <input id="password" class="qp-input" type="password" placeholder="••••••••"
+                 [(ngModel)]="password" name="password" required />
+        </div>
 
-  </div>
+        <div class="auth__error" *ngIf="errorMessage">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          {{ errorMessage }}
+        </div>
+
+        <button type="submit" class="qp-btn qp-btn--primary qp-btn--block" [disabled]="loading">
+          <span *ngIf="loading" class="qp-spin"></span>
+          {{ loading ? 'Signing in…' : 'Sign in' }}
+        </button>
+
+      </form>
+
+      <p class="auth__switch">
+        Don't have an account?
+        <span class="auth__link" routerLink="/register">Create one</span>
+      </p>
+
+    </div>
+  </main>
 
 </div>

@@ -1,127 +1,105 @@
-<div class="register-container">
+<div class="auth">
 
-  <div class="register-card">
-
-    <h1>
-      Create Account
-    </h1>
-
-    <p class="subtitle">
-      Register for QueryPulse
-    </p>
-
-    <div
-      class="success-message"
-      *ngIf="successMessage"
-    >
-      {{ successMessage }}
+  <!-- Brand panel -->
+  <aside class="auth__brand">
+    <div class="auth__brand-top">
+      <div class="auth__logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12h4l2 6 4-14 2 8h6" />
+        </svg>
+        <span>QueryPulse</span>
+      </div>
     </div>
 
-    <div
-      class="error-message"
-      *ngIf="errorMessage"
-    >
-      {{ errorMessage }}
+    <div class="auth__brand-mid">
+      <h2>Start monitoring your databases in minutes.</h2>
+      <p>Create an account to request access. An administrator will approve your workspace membership.</p>
+
+      <ul class="auth__features">
+        <li><span class="auth__check">✓</span> Secure, role-based access control</li>
+        <li><span class="auth__check">✓</span> Unified view across all your engines</li>
+        <li><span class="auth__check">✓</span> Proactive alerts, zero setup overhead</li>
+      </ul>
     </div>
 
-    <form (ngSubmit)="register()">
+    <div class="auth__brand-foot">
+      <div class="auth__pulse"><span class="qp-badge__dot"></span> Trusted by engineering teams</div>
+    </div>
+  </aside>
 
-      <div class="input-group">
+  <!-- Form panel -->
+  <main class="auth__panel">
+    <div class="auth__form-wrap">
 
-        <input
-          type="text"
-          placeholder="First Name"
-          [(ngModel)]="firstName"
-          name="firstName"
-        />
-
+      <div class="auth__heading">
+        <h1>Create your account</h1>
+        <p>Register for a QueryPulse workspace.</p>
       </div>
 
-      <div class="input-group">
-
-        <input
-          type="text"
-          placeholder="Last Name"
-          [(ngModel)]="lastName"
-          name="lastName"
-        />
-
+      <div class="auth__success" *ngIf="successMessage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+        </svg>
+        {{ successMessage }}
       </div>
 
-      <div class="input-group">
-
-        <input
-          type="text"
-          placeholder="Username"
-          [(ngModel)]="username"
-          name="username"
-        />
-
+      <div class="auth__error" *ngIf="errorMessage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+        </svg>
+        {{ errorMessage }}
       </div>
 
-      <div class="input-group">
+      <form (ngSubmit)="register()" class="auth__form">
 
-        <input
-          type="email"
-          placeholder="Email"
-          [(ngModel)]="email"
-          name="email"
-        />
+        <div class="auth__row">
+          <div class="qp-field">
+            <label class="qp-label">First name</label>
+            <input class="qp-input" type="text" placeholder="Ada" [(ngModel)]="firstName" name="firstName" />
+          </div>
+          <div class="qp-field">
+            <label class="qp-label">Last name</label>
+            <input class="qp-input" type="text" placeholder="Lovelace" [(ngModel)]="lastName" name="lastName" />
+          </div>
+        </div>
 
-      </div>
+        <div class="qp-field">
+          <label class="qp-label">Username</label>
+          <input class="qp-input" type="text" placeholder="ada.lovelace" [(ngModel)]="username" name="username" />
+        </div>
 
-      <div class="input-group">
+        <div class="qp-field">
+          <label class="qp-label">Email address</label>
+          <input class="qp-input" type="email" placeholder="you@company.com" [(ngModel)]="email" name="email" />
+        </div>
 
-        <input
-          type="password"
-          placeholder="Password"
-          [(ngModel)]="password"
-          name="password"
-        />
+        <div class="auth__row">
+          <div class="qp-field">
+            <label class="qp-label">Password</label>
+            <input class="qp-input" type="password" placeholder="••••••••" [(ngModel)]="password" name="password" />
+          </div>
+          <div class="qp-field">
+            <label class="qp-label">Confirm</label>
+            <input class="qp-input" type="password" placeholder="••••••••" [(ngModel)]="confirmPassword" name="confirmPassword" />
+          </div>
+        </div>
 
-      </div>
+        <button type="submit" class="qp-btn qp-btn--primary qp-btn--block">
+          <span *ngIf="loading" class="qp-spin"></span>
+          {{ loading ? 'Creating account…' : 'Create account' }}
+        </button>
 
-      <div class="input-group">
+      </form>
 
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          [(ngModel)]="confirmPassword"
-          name="confirmPassword"
-        />
+      <p class="auth__switch">
+        Already have an account?
+        <span class="auth__link" (click)="goToLogin()">Sign in</span>
+      </p>
 
-      </div>
-
-      <button
-        type="submit"
-        class="register-btn"
-      >
-
-        <span *ngIf="!loading">
-          Register
-        </span>
-
-        <span *ngIf="loading">
-          Registering...
-        </span>
-
-      </button>
-
-    </form>
-
-    <p class="login-text">
-
-      Already have an account?
-
-      <span
-        class="login-link"
-        (click)="goToLogin()"
-      >
-        Login
-      </span>
-
-    </p>
-
-  </div>
+    </div>
+  </main>
 
 </div>

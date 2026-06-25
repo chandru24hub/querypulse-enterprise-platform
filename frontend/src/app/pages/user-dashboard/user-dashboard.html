@@ -1,34 +1,250 @@
-<div class="user-dashboard">
+<app-toast></app-toast>
 
-    <div class="topbar">
+<div class="ud">
 
-        <h1>
-            QueryPulse
-        </h1>
-
-        <button
-            class="logout-btn"
-            (click)="logout()"
-        >
-            Logout
-        </button>
-
+  <header class="ud__topbar">
+    <div class="ud__brand">
+      <div class="ud__logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12h4l2 6 4-14 2 8h6" />
+        </svg>
+      </div>
+      <span class="ud__name">QueryPulse</span>
+      <span class="qp-badge qp-badge--neutral">Member</span>
     </div>
 
-    <div class="dashboard-content">
+    <div class="ud__topbar-right">
+      <button class="qp-btn qp-btn--ghost qp-btn--sm" (click)="loadDatabases()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+        </svg>
+        Refresh
+      </button>
+      <div class="ud__user">
+        <div class="ud__avatar">{{ initials }}</div>
+      </div>
+      <button class="qp-btn qp-btn--ghost qp-btn--sm" (click)="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+        </svg>
+        Sign out
+      </button>
+    </div>
+  </header>
 
-        <div class="welcome-card">
+  <main class="ud__main">
 
-            <h2>
-                Welcome User
-            </h2>
+    <!-- Hero -->
+    <div class="ud__hero qp-card qp-card--pad">
+      <span class="qp-eyebrow">
+        <span class="ud__dot" [class.ud__dot--ok]="healthOk" [class.ud__dot--warn]="!healthOk"></span>
+        Workspace {{ healthLabel | lowercase }}
+      </span>
+      <h1>Welcome back, {{ userName }} 👋</h1>
+      <p>Here's the live status of every database in your monitoring workspace.</p>
+    </div>
 
-            <p>
-                PostgreSQL Monitoring Dashboard
-            </p>
-
+    <!-- Stats -->
+    <div class="ud__cards">
+      <div class="qp-stat">
+        <div class="qp-stat__top">
+          <span class="qp-stat__label">Total databases</span>
+          <span class="qp-stat__icon qp-stat__icon--primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" /></svg>
+          </span>
         </div>
+        <div class="qp-stat__value">{{ databases.length }}</div>
+        <div class="qp-stat__sub">{{ monitoredCount }} actively monitored</div>
+      </div>
+
+      <div class="qp-stat">
+        <div class="qp-stat__top">
+          <span class="qp-stat__label">Connected</span>
+          <span class="qp-stat__icon qp-stat__icon--success">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+          </span>
+        </div>
+        <div class="qp-stat__value">{{ connectedCount }}</div>
+        <div class="qp-stat__sub">Reachable right now</div>
+      </div>
+
+      <div class="qp-stat">
+        <div class="qp-stat__top">
+          <span class="qp-stat__label">Issues</span>
+          <span class="qp-stat__icon" [class.qp-stat__icon--danger]="issuesCount > 0" [class.qp-stat__icon--success]="issuesCount === 0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+          </span>
+        </div>
+        <div class="qp-stat__value">{{ issuesCount }}</div>
+        <div class="qp-stat__sub">Failed connections</div>
+      </div>
+
+      <div class="qp-stat">
+        <div class="qp-stat__top">
+          <span class="qp-stat__label">Fleet health</span>
+          <span class="qp-stat__icon" [class.qp-stat__icon--success]="healthOk" [class.qp-stat__icon--warning]="!healthOk">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+          </span>
+        </div>
+        <div class="qp-stat__value" style="font-size: 22px;">{{ healthLabel }}</div>
+        <div class="qp-stat__sub">Across all databases</div>
+      </div>
+    </div>
+
+    <!-- Fleet list -->
+    <div class="qp-card">
+      <div class="qp-card__head">
+        <div>
+          <h2>Database fleet</h2>
+          <p>Select a database to view live health &amp; alerts</p>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="qp-empty" *ngIf="isLoading">
+        <span class="qp-spin" style="border-color: rgba(79,70,229,0.25); border-top-color: var(--primary);"></span>
+        <p style="margin-top: 12px;">Loading your databases…</p>
+      </div>
+
+      <!-- Empty -->
+      <div class="qp-empty" *ngIf="!isLoading && databases.length === 0">
+        <span class="qp-empty__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" /></svg>
+        </span>
+        <h3>No databases available</h3>
+        <p>Once an administrator registers a database, it will appear here for monitoring.</p>
+      </div>
+
+      <!-- Table -->
+      <div class="qp-table-wrap" *ngIf="!isLoading && databases.length > 0">
+        <table class="qp-table">
+          <thead>
+            <tr>
+              <th>Database</th>
+              <th>Engine</th>
+              <th>Endpoint</th>
+              <th>Status</th>
+              <th style="text-align: right;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let db of databases" class="ud__row"
+                [class.ud__row--active]="selectedDb?.id === db.id" (click)="viewHealth(db)">
+              <td>
+                <div class="ud__db-cell">
+                  <div class="ud__db-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>
+                  </div>
+                  <span class="ud__db-name">{{ db.displayName }}</span>
+                </div>
+              </td>
+              <td><span class="qp-badge qp-badge--neutral">{{ db.databaseType }}</span></td>
+              <td><span class="qp-mono">{{ db.host }}:{{ db.port }}</span></td>
+              <td>
+                <span class="qp-badge qp-badge--success qp-badge--pulse" *ngIf="db.connectionStatus === 'CONNECTED'"><span class="qp-badge__dot"></span> Connected</span>
+                <span class="qp-badge qp-badge--danger" *ngIf="db.connectionStatus === 'FAILED'"><span class="qp-badge__dot"></span> Failed</span>
+                <span class="qp-badge qp-badge--neutral" *ngIf="!db.connectionStatus">Not tested</span>
+              </td>
+              <td style="text-align: right;">
+                <span class="ud__view">View<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg></span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Detail drawer -->
+  <div class="ud__overlay" *ngIf="selectedDb" (click)="closeDetail()"></div>
+  <aside class="ud__drawer" [class.open]="selectedDb">
+    <div class="ud__drawer-head" *ngIf="selectedDb">
+      <div>
+        <span class="qp-eyebrow" style="margin: 0;">Live health</span>
+        <h2>{{ selectedDb.displayName }}</h2>
+      </div>
+      <div class="ud__drawer-actions">
+        <button class="qp-btn qp-btn--ghost qp-btn--sm" (click)="downloadPdf(selectedDb.id)" title="Export as PDF">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="19" x2="12" y2="12" /><line x1="9" y1="16" x2="15" y2="16" /></svg>
+        </button>
+        <button class="qp-btn qp-btn--ghost qp-btn--sm" (click)="downloadExcel(selectedDb.id)" title="Export as Excel">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /></svg>
+        </button>
+        <button class="ud__close" (click)="closeDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="ud__drawer-body" *ngIf="selectedDb">
+
+      <div class="qp-empty" *ngIf="detailLoading">
+        <span class="qp-spin" style="border-color: rgba(79,70,229,0.25); border-top-color: var(--primary);"></span>
+        <p style="margin-top: 12px;">Fetching live metrics…</p>
+      </div>
+
+      <ng-container *ngIf="selectedHealth && !detailLoading">
+        <div class="ud__metric-grid">
+          <div class="ud__metric">
+            <span class="ud__metric-label">Status</span>
+            <span class="qp-badge qp-badge--success" *ngIf="selectedHealth.connectionStatus === 'CONNECTED'"><span class="qp-badge__dot"></span> Connected</span>
+            <span class="qp-badge qp-badge--danger" *ngIf="selectedHealth.connectionStatus === 'FAILED'"><span class="qp-badge__dot"></span> Failed</span>
+          </div>
+          <div class="ud__metric">
+            <span class="ud__metric-label">Active connections</span>
+            <span class="ud__metric-value">{{ selectedHealth.activeConnections }}</span>
+          </div>
+          <div class="ud__metric">
+            <span class="ud__metric-label">Database size</span>
+            <span class="ud__metric-value">{{ selectedHealth.databaseSize }}</span>
+          </div>
+          <div class="ud__metric">
+            <span class="ud__metric-label">Tables</span>
+            <span class="ud__metric-value">{{ selectedHealth.tableCount }}</span>
+          </div>
+          <div class="ud__metric ud__metric--wide">
+            <span class="ud__metric-label">Uptime</span>
+            <span class="ud__metric-value" style="font-size: 16px;">{{ selectedHealth.databaseUptime }}</span>
+          </div>
+          <div class="ud__metric ud__metric--wide">
+            <span class="ud__metric-label">Version</span>
+            <span class="ud__metric-sub">{{ selectedHealth.databaseVersion }}</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Alerts -->
+      <div class="ud__alerts-head" *ngIf="!detailLoading">
+        <h3>Alerts</h3>
+        <span class="qp-badge" [class.qp-badge--warning]="selectedAlerts.length > 0" [class.qp-badge--success]="selectedAlerts.length === 0">
+          {{ selectedAlerts.length }} active
+        </span>
+      </div>
+
+      <div class="ud__no-alerts" *ngIf="!detailLoading && selectedAlerts.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+        No active alerts — all clear.
+      </div>
+
+      <div class="ud__alert" *ngFor="let alert of selectedAlerts"
+           [class.ud__alert--critical]="alert.severity === 'CRITICAL' || alert.severity === 'HIGH'">
+        <div class="ud__alert-top">
+          <h4>{{ alert.alertType }}</h4>
+          <span class="qp-badge"
+                [class.qp-badge--danger]="alert.severity === 'CRITICAL' || alert.severity === 'HIGH'"
+                [class.qp-badge--warning]="alert.severity === 'MEDIUM'"
+                [class.qp-badge--neutral]="alert.severity === 'LOW'">{{ alert.severity }}</span>
+        </div>
+        <p>{{ alert.message }}</p>
+        <span class="ud__alert-time">{{ alert.createdAt }}</span>
+      </div>
 
     </div>
+  </aside>
 
 </div>

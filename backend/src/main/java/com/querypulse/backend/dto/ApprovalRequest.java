@@ -9,20 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DatabaseAlertResponse {
+public class ApprovalRequest {
 
-    private String id;
-
-    private String databaseId;
-
-    private String databaseName;
-
-    private String severity;
-
-    private String alertType;
+    private String role;
 
     private String message;
-
-    private String createdAt;
-
 }

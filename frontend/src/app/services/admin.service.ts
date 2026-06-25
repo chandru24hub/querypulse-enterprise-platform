@@ -38,7 +38,9 @@ export class AdminService {
   }
 
   approveUser(
-    userId: string
+    userId: string,
+    role: string = 'USER',
+    message: string = ''
   ): Observable<any> {
 
     const token =
@@ -51,9 +53,40 @@ export class AdminService {
           `Bearer ${token}`
       });
 
+    const body = {
+      role: role,
+      message: message
+    };
+
     return this.http.post(
-      `${this.apiUrl}/approve/${userId}`,
-      {},
+      `${this.apiUrl}/approve-user/${userId}`,
+      body,
+      { headers }
+    );
+  }
+
+  rejectUser(
+    userId: string,
+    reason: string = ''
+  ): Observable<any> {
+
+    const token =
+      localStorage.getItem('token');
+
+    const headers =
+      new HttpHeaders({
+
+        Authorization:
+          `Bearer ${token}`
+      });
+
+    const body = {
+      message: reason
+    };
+
+    return this.http.post(
+      `${this.apiUrl}/reject-user/${userId}`,
+      body,
       { headers }
     );
   }

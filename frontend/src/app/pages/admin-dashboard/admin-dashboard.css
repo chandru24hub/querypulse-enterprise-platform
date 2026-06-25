@@ -1,269 +1,91 @@
-body {
-
-  margin: 0;
-
-  padding: 0;
-
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-.dashboard-container {
-
-  margin-left: 260px;
-
-  min-height: 100vh;
-
-  padding: 40px;
-
-  background:
-    linear-gradient(
-      135deg,
-      #020617,
-      #0f172a,
-      #001b44
-    );
-
-  color: white;
-}
-
-.dashboard-title {
-
-  font-size: 60px;
-
-  font-weight: bold;
-
-  margin-bottom: 40px;
-}
-
-.status-cards {
-
+.qp-user-cell {
   display: flex;
-
-  gap: 20px;
-
-  margin-bottom: 50px;
-}
-
-.status-card {
-
-  flex: 1;
-
-  padding: 40px;
-
-  border-radius: 24px;
-
-  text-align: center;
-
-  color: white;
-}
-
-.status-card h2 {
-
-  font-size: 28px;
-
-  margin-bottom: 20px;
-}
-
-.status-card p {
-
-  font-size: 36px;
-
-  font-weight: bold;
-}
-
-.pending {
-
-  background: #f59e0b;
-}
-
-.approved {
-
-  background: #10b981;
-}
-
-.rejected {
-
-  background: #ef4444;
-}
-
-.section-title {
-
-  font-size: 42px;
-
-  margin-bottom: 30px;
-}
-
-.users-container {
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 25px;
-}
-
-.user-card {
-
-  background: rgba(30,41,59,0.9);
-
-  padding: 30px;
-
-  border-radius: 24px;
-}
-
-.user-card h2 {
-
-  font-size: 40px;
-
-  margin-bottom: 20px;
-}
-
-.user-card p {
-
-  font-size: 24px;
-
-  color: #cbd5e1;
-
-  margin-bottom: 10px;
-}
-
-.button-group {
-
-  display: flex;
-
-  gap: 15px;
-
-  margin-top: 25px;
-}
-
-.approve-btn {
-
-  border: none;
-
-  padding: 14px 24px;
-
-  border-radius: 12px;
-
-  background: #2563eb;
-
-  color: white;
-
-  font-size: 16px;
-
-  cursor: pointer;
-}
-
-.reject-btn {
-
-  border: none;
-
-  padding: 14px 24px;
-
-  border-radius: 12px;
-
-  background: #ef4444;
-
-  color: white;
-
-  font-size: 16px;
-
-  cursor: pointer;
-}
-
-.empty-message {
-
-  font-size: 22px;
-
-  color: #cbd5e1;
-}
-
-.modal-overlay {
-
-  position: fixed;
-
-  inset: 0;
-
-  background: rgba(0,0,0,0.7);
-
-  display: flex;
-
-  justify-content: center;
-
   align-items: center;
-
-  z-index: 9999;
+  gap: 11px;
 }
-
-.modal {
-
-  width: 500px;
-
-  background: #111827;
-
-  padding: 35px;
-
-  border-radius: 24px;
+.qp-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border: 1px solid var(--primary-soft-border);
 }
-
-.modal h2 {
-
-  margin-bottom: 25px;
-
-  font-size: 32px;
+.qp-user-name {
+  font-weight: 600;
+  color: var(--text);
 }
-
-.modal textarea {
-
-  width: 100%;
-
-  height: 160px;
-
-  border: none;
-
-  border-radius: 14px;
-
-  padding: 15px;
-
-  background: #1e293b;
-
-  color: white;
-
-  font-size: 16px;
-}
-
-.modal-buttons {
-
+.qp-row-actions {
   display: flex;
-
+  gap: 8px;
   justify-content: flex-end;
-
-  gap: 15px;
-
-  margin-top: 25px;
 }
 
-.search-input {
+.qp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
 
-  width: 100%;
+.qp-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
 
-  padding: 14px;
+.qp-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+}
 
-  border: none;
+.qp-select:hover {
+  border-color: var(--primary-soft-border);
+}
 
-  border-radius: 12px;
-
-  background: #1e293b;
-
-  color: white;
-
-  font-size: 16px;
-
-  margin-bottom: 25px;
-
+.qp-select:focus {
   outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
 }
 
-.search-input::placeholder {
+.qp-textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text);
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.2s;
+}
 
-  color: #94a3b8;
+.qp-textarea:hover {
+  border-color: var(--primary-soft-border);
+}
+
+.qp-textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+}
+
+@media (max-width: 700px) {
+  .qp-card__head { flex-direction: column; align-items: stretch; }
+  .qp-card__head .qp-search { width: 100% !important; max-width: none !important; }
 }

@@ -5,24 +5,21 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DatabaseAlertResponse {
+public class ErrorResponse {
 
-    private String id;
+    private int status;
 
-    private String databaseId;
-
-    private String databaseName;
-
-    private String severity;
-
-    private String alertType;
+    private String error;
 
     private String message;
 
-    private String createdAt;
+    private String path;
 
+    private LocalDateTime timestamp;
 }

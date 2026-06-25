@@ -18,6 +18,9 @@ from './guards/auth-guard';
 import { DatabaseManagement }
 from './pages/database-management/database-management';
 
+import { GlobalAlertsComponent }
+from './pages/global-alerts/global-alerts';
+
 export const routes: Routes = [
 
   {
@@ -55,6 +58,13 @@ export const routes: Routes = [
       authGuard
   ]
 },
+  {
+    path: 'alerts',
+
+    component: GlobalAlertsComponent,
+
+    canActivate: [authGuard]
+  },
   {
     path: '**',
 

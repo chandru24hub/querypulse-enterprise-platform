@@ -2,9 +2,12 @@ package com.querypulse.backend.scheduler;
 
 import com.querypulse.backend.entity.DatabaseAlert;
 import com.querypulse.backend.entity.MonitoredDatabase;
+import com.querypulse.backend.entity.User;
 import com.querypulse.backend.repository.DatabaseAlertRepository;
 import com.querypulse.backend.repository.MonitoredDatabaseRepository;
+import com.querypulse.backend.repository.UserRepository;
 import com.querypulse.backend.service.DatabaseService;
+import com.querypulse.backend.service.EmailService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +29,12 @@ public class DatabaseMonitoringScheduler {
 
     private final DatabaseAlertRepository
             databaseAlertRepository;
+
+    private final UserRepository
+            userRepository;
+
+    private final EmailService
+            emailService;
 
     @Scheduled(fixedRate = 300000)
     public void monitorDatabases() {
@@ -108,9 +117,7 @@ public class DatabaseMonitoringScheduler {
 
                                     .build();
 
-                    databaseAlertRepository.save(
-                            alert
-                    );
+                    createAndSendAlert(alert);
 
                 }
 
@@ -152,9 +159,7 @@ public class DatabaseMonitoringScheduler {
 
                                     .build();
 
-                    databaseAlertRepository.save(
-                            alert
-                    );
+                    createAndSendAlert(alert);
 
                 }
 
@@ -196,9 +201,7 @@ public class DatabaseMonitoringScheduler {
 
                                     .build();
 
-                    databaseAlertRepository.save(
-                            alert
-                    );
+                    createAndSendAlert(alert);
 
                 }
 
@@ -252,14 +255,35 @@ public class DatabaseMonitoringScheduler {
 
                     .build();
 
-    databaseAlertRepository.save(
-            alert
-    );
+    createAndSendAlert(alert);
 
 }
 
         }
 
+    }
+
+    private void createAndSendAlert(DatabaseAlert alert) {
+        databaseAlertRepository.save(alert);
+
+        List<User> activeUsers = userRepository.findAll();
+
+        MonitoredDatabase database = monitoredDatabaseRepository
+                .findById(alert.getDatabaseId())
+                .orElse(null);
+        String databaseName = database != null ? database.getDisplayName() : "Unknown";
+
+        for (User user : activeUsers) {
+            if (user.getEmail() != null && user.getIsActive()) {
+                emailService.sendAlertEmail(
+                        user.getEmail(),
+                        alert.getAlertType(),
+                        databaseName,
+                        alert.getSeverity(),
+                        alert.getMessage()
+                );
+            }
+        }
     }
 
 }

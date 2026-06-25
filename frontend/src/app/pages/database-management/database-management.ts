@@ -20,6 +20,14 @@ import {
 } from '../../services/database.service';
 
 import {
+  ToastComponent
+} from '../../shared/toast/toast';
+
+import {
+  ToastService
+} from '../../shared/toast/toast.service';
+
+import {
   Chart,
   registerables
 } from 'chart.js';
@@ -32,7 +40,8 @@ import {
   imports: [
     CommonModule,
     FormsModule,
-    Sidebar
+    Sidebar,
+    ToastComponent
   ],
 
   templateUrl:
@@ -80,10 +89,15 @@ statusChart: any;
     password: ''
   };
 
+  selectedDatabaseName = '';
+
   constructor(
 
     private databaseService:
-      DatabaseService
+      DatabaseService,
+
+    private toastService:
+      ToastService
 
   ) {
 
@@ -113,7 +127,7 @@ statusChart: any;
 
     ) {
 
-      alert(
+      this.toastService.showWarning(
         'Please fill all required fields'
       );
 
@@ -128,8 +142,8 @@ statusChart: any;
 
         next: () => {
 
-          alert(
-            'Database Registered Successfully'
+          this.toastService.showSuccess(
+            'Database registered successfully'
           );
 
           this.resetForm();
@@ -143,8 +157,8 @@ statusChart: any;
             error
           );
 
-          alert(
-            'Failed to Register Database'
+          this.toastService.showError(
+            'Failed to register database'
           );
         }
 
@@ -189,16 +203,15 @@ statusChart: any;
             response.success
           ) {
 
-            alert(
-              '🟢 Database Connection Successful'
+            this.toastService.showSuccess(
+              'Database connection successful'
             );
 
           } else {
 
-            alert(
-              '🔴 '
-              +
-              response.message
+            this.toastService.showError(
+              response.message ||
+              'Database connection failed'
             );
           }
 
@@ -211,8 +224,8 @@ statusChart: any;
             error
           );
 
-          alert(
-            'Connection Test Failed'
+          this.toastService.showError(
+            'Connection test failed'
           );
         }
 
@@ -257,7 +270,7 @@ this.loadAlerts(
             error
           );
 
-          alert(
+          this.toastService.showError(
             'Failed to load health information'
           );
         }
@@ -356,19 +369,24 @@ renderChart(): void {
 
                               {
 
-                                  label:
-                                      'Active Connections',
-
-                                  data:
-                                      activeConnections,
-
-                                  tension: 0.3
+                                  label: 'Active Connections',
+                                  data: activeConnections,
+                                  tension: 0.35,
+                                  borderColor: '#4f46e5',
+                                  backgroundColor: 'rgba(79,70,229,0.12)',
+                                  borderWidth: 2,
+                                  fill: true,
+                                  pointRadius: 2,
+                                  pointHoverRadius: 5,
+                                  pointBackgroundColor: '#4f46e5'
 
                               }
 
                           ]
 
-                      }
+                      },
+
+                      options: this.chartOptions()
 
                   }
 
@@ -408,19 +426,24 @@ renderChart(): void {
 
                               {
 
-                                  label:
-                                      'Database Size (kB)',
-
-                                  data:
-                                      databaseSizes,
-
-                                  tension: 0.3
+                                  label: 'Database Size (kB)',
+                                  data: databaseSizes,
+                                  tension: 0.35,
+                                  borderColor: '#06b6d4',
+                                  backgroundColor: 'rgba(6,182,212,0.12)',
+                                  borderWidth: 2,
+                                  fill: true,
+                                  pointRadius: 2,
+                                  pointHoverRadius: 5,
+                                  pointBackgroundColor: '#06b6d4'
 
                               }
 
                           ]
 
-                      }
+                      },
+
+                      options: this.chartOptions()
 
                   }
 
@@ -460,19 +483,25 @@ renderChart(): void {
 
                               {
 
-                                  label:
-                                      'Availability',
-
-                                  data:
-                                      statuses,
-
-                                  tension: 0.3
+                                  label: 'Availability',
+                                  data: statuses,
+                                  tension: 0.35,
+                                  borderColor: '#10b981',
+                                  backgroundColor: 'rgba(16,185,129,0.12)',
+                                  borderWidth: 2,
+                                  fill: true,
+                                  stepped: true,
+                                  pointRadius: 2,
+                                  pointHoverRadius: 5,
+                                  pointBackgroundColor: '#10b981'
 
                               }
 
                           ]
 
-                      }
+                      },
+
+                      options: this.chartOptions()
 
                   }
 
@@ -582,6 +611,48 @@ loadAlerts(
       });
 
 }
+
+  chartOptions(): any {
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: {
+          display: true,
+          labels: {
+            color: '#5b6675',
+            font: { family: 'Inter, sans-serif', size: 12, weight: '600' },
+            usePointStyle: true,
+            pointStyle: 'circle',
+            boxWidth: 8,
+            padding: 16,
+          },
+        },
+        tooltip: {
+          backgroundColor: '#0f172a',
+          titleColor: '#fff',
+          bodyColor: '#cbd5e1',
+          padding: 12,
+          cornerRadius: 8,
+          displayColors: false,
+          titleFont: { family: 'Inter, sans-serif' },
+          bodyFont: { family: 'Inter, sans-serif' },
+        },
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: '#94a3b8', font: { family: 'Inter, sans-serif', size: 11 }, maxRotation: 0, autoSkip: true, maxTicksLimit: 8 },
+        },
+        y: {
+          grid: { color: '#eef1f6' },
+          border: { display: false },
+          ticks: { color: '#94a3b8', font: { family: 'Inter, sans-serif', size: 11 } },
+        },
+      },
+    };
+  }
 
   resetForm(): void {
 

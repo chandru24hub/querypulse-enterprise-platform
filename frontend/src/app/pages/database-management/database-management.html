@@ -1,547 +1,333 @@
 <app-sidebar></app-sidebar>
+<app-toast></app-toast>
 
-<div class="database-page">
+<div class="qp-shell">
 
-  <h1>
-    Database Management
-  </h1>
+  <header class="qp-topbar">
+    <div class="qp-topbar__title">
+      <h1>Databases</h1>
+      <p>Register connections and monitor real-time health</p>
+    </div>
+    <span class="qp-badge qp-badge--neutral">{{ databases.length }} registered</span>
+  </header>
 
-  <div class="form-card">
+  <div class="qp-page">
 
-    <h2>
-      Register Database
-    </h2>
+    <div class="db-grid">
 
-    <input
-      type="text"
-      placeholder="Display Name"
-      [(ngModel)]="databaseForm.displayName"
-    />
+      <!-- Register form -->
+      <div class="qp-card">
+        <div class="qp-card__head">
+          <div>
+            <h2>Register a database</h2>
+            <p>Connect a new instance to start monitoring</p>
+          </div>
+        </div>
+        <div class="qp-card__body">
+          <div class="db-form">
 
-    <select
-      [(ngModel)]="databaseForm.databaseType"
-    >
+            <div class="qp-field db-form__full">
+              <label class="qp-label">Display name</label>
+              <input class="qp-input" type="text" placeholder="Production Postgres"
+                     [(ngModel)]="databaseForm.displayName" />
+            </div>
 
-      <option value="POSTGRESQL">
-        PostgreSQL
-      </option>
+            <div class="qp-field">
+              <label class="qp-label">Engine</label>
+              <select class="qp-select" [(ngModel)]="databaseForm.databaseType">
+                <option value="POSTGRESQL">PostgreSQL</option>
+                <option value="ORACLE">Oracle</option>
+                <option value="MYSQL">MySQL</option>
+                <option value="AURORA_POSTGRESQL">Aurora PostgreSQL</option>
+              </select>
+            </div>
 
-      <option value="ORACLE">
-        Oracle
-      </option>
+            <div class="qp-field">
+              <label class="qp-label">Port</label>
+              <input class="qp-input" type="number" placeholder="5432"
+                     [(ngModel)]="databaseForm.port" />
+            </div>
 
-      <option value="MYSQL">
-        MySQL
-      </option>
+            <div class="qp-field db-form__full">
+              <label class="qp-label">Host</label>
+              <input class="qp-input" type="text" placeholder="db.internal.company.com"
+                     [(ngModel)]="databaseForm.host" />
+            </div>
 
-      <option value="AURORA_POSTGRESQL">
-        Aurora PostgreSQL
-      </option>
+            <div class="qp-field db-form__full">
+              <label class="qp-label">Database name</label>
+              <input class="qp-input" type="text" placeholder="app_production"
+                     [(ngModel)]="databaseForm.databaseName" />
+            </div>
 
-    </select>
+            <div class="qp-field">
+              <label class="qp-label">Username</label>
+              <input class="qp-input" type="text" placeholder="monitor_user"
+                     [(ngModel)]="databaseForm.username" />
+            </div>
 
-    <input
-      type="text"
-      placeholder="Host"
-      [(ngModel)]="databaseForm.host"
-    />
+            <div class="qp-field">
+              <label class="qp-label">Password</label>
+              <input class="qp-input" type="password" placeholder="••••••••"
+                     [(ngModel)]="databaseForm.password" />
+            </div>
 
-    <input
-      type="number"
-      placeholder="Port"
-      [(ngModel)]="databaseForm.port"
-    />
-
-    <input
-      type="text"
-      placeholder="Database Name"
-      [(ngModel)]="databaseForm.databaseName"
-    />
-
-    <input
-      type="text"
-      placeholder="Username"
-      [(ngModel)]="databaseForm.username"
-    />
-
-    <input
-      type="password"
-      placeholder="Password"
-      [(ngModel)]="databaseForm.password"
-    />
-
-    <button
-      (click)="createDatabase()"
-    >
-      Register Database
-    </button>
-
-  </div>
-
-  <div class="table-card">
-
-    <h2>
-      Registered Databases
-    </h2>
-
-    <table>
-
-      <thead>
-
-        <tr>
-
-          <th>Name</th>
-          <th>Type</th>
-          <th>Host</th>
-          <th>Port</th>
-          <th>Database</th>
-          <th>Monitoring</th>
-          <th>Connection</th>
-          <th>Last Checked</th>
-          <th>Connection Test</th>
-          <th>Health</th>
-
-        </tr>
-
-      </thead>
-
-      <tbody>
-
-        <tr *ngFor="let db of databases">
-
-          <td>{{ db.displayName }}</td>
-
-          <td>{{ db.databaseType }}</td>
-
-          <td>{{ db.host }}</td>
-
-          <td>{{ db.port }}</td>
-
-          <td>{{ db.databaseName }}</td>
-
-          <td>
-
-            <span *ngIf="db.monitoringEnabled">
-              Enabled
-            </span>
-
-            <span *ngIf="!db.monitoringEnabled">
-              Disabled
-            </span>
-
-          </td>
-
-          <td>
-
-            <span
-              class="connected"
-              *ngIf="db.connectionStatus === 'CONNECTED'"
-            >
-              🟢 CONNECTED
-            </span>
-
-            <span
-              class="failed"
-              *ngIf="db.connectionStatus === 'FAILED'"
-            >
-              🔴 FAILED
-            </span>
-
-            <span
-              *ngIf="!db.connectionStatus"
-            >
-              NOT TESTED
-            </span>
-
-          </td>
-
-          <td>
-
-            {{ db.lastCheckedAt || '-' }}
-
-          </td>
-
-          <td>
-
-            <button
-              (click)="testConnection(db.id)"
-            >
-              Test Connection
+            <button class="qp-btn qp-btn--primary db-form__full" (click)="createDatabase()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              Register database
             </button>
 
-          </td>
+          </div>
+        </div>
+      </div>
 
-          <td>
+      <!-- Registered databases table -->
+      <div class="qp-card">
+        <div class="qp-card__head">
+          <div>
+            <h2>Registered databases</h2>
+            <p>Test connections and inspect health</p>
+          </div>
+        </div>
 
-            <button
-              (click)="viewHealth(db.id)"
-            >
-              View Health
-            </button>
+        <div class="qp-empty" *ngIf="databases.length === 0">
+          <span class="qp-empty__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" />
+            </svg>
+          </span>
+          <h3>No databases yet</h3>
+          <p>Register your first database using the form on the left.</p>
+        </div>
 
-          </td>
-
-        </tr>
-
-      </tbody>
-
-    </table>
-
-  </div>
-
-  <!-- Metrics Dashboard -->
-
-  <div
-    class="metrics-container"
-    *ngIf="selectedHealth"
-  >
-
-    <div class="metric-card">
-
-      <h3>
-        Active Connections
-      </h3>
-
-      <div class="metric-value">
-
-        {{ selectedHealth.activeConnections }}
-
+        <div class="qp-table-wrap" *ngIf="databases.length > 0">
+          <table class="qp-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Engine</th>
+                <th>Endpoint</th>
+                <th>Monitoring</th>
+                <th>Connection</th>
+                <th>Last checked</th>
+                <th style="text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let db of databases">
+                <td><span class="qp-user-name">{{ db.displayName }}</span></td>
+                <td><span class="qp-badge qp-badge--neutral">{{ db.databaseType }}</span></td>
+                <td>
+                  <span class="qp-mono">{{ db.host }}:{{ db.port }}</span>
+                  <div class="db-endpoint-sub">{{ db.databaseName }}</div>
+                </td>
+                <td>
+                  <span class="qp-badge qp-badge--info" *ngIf="db.monitoringEnabled">Enabled</span>
+                  <span class="qp-badge qp-badge--neutral" *ngIf="!db.monitoringEnabled">Disabled</span>
+                </td>
+                <td>
+                  <span class="qp-badge qp-badge--success qp-badge--pulse" *ngIf="db.connectionStatus === 'CONNECTED'">
+                    <span class="qp-badge__dot"></span> Connected
+                  </span>
+                  <span class="qp-badge qp-badge--danger" *ngIf="db.connectionStatus === 'FAILED'">
+                    <span class="qp-badge__dot"></span> Failed
+                  </span>
+                  <span class="qp-badge qp-badge--neutral" *ngIf="!db.connectionStatus">Not tested</span>
+                </td>
+                <td><span class="db-muted">{{ db.lastCheckedAt || '—' }}</span></td>
+                <td>
+                  <div class="qp-row-actions">
+                    <button class="qp-btn qp-btn--ghost qp-btn--sm" (click)="testConnection(db.id)">Test</button>
+                    <button class="qp-btn qp-btn--subtle qp-btn--sm" (click)="viewHealth(db.id)">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                           stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+                      Health
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </div>
 
-    <div class="metric-card">
-
-      <h3>
-        Database Size
-      </h3>
-
-      <div class="metric-value">
-
-        {{ selectedHealth.databaseSize }}
-
+    <!-- Metrics -->
+    <div *ngIf="selectedHealth">
+      <div class="qp-section-title">
+        <h2>Health overview</h2>
+        <span>Live snapshot for the selected database</span>
       </div>
 
+      <div class="qp-stat-grid">
+        <div class="qp-stat">
+          <div class="qp-stat__top">
+            <span class="qp-stat__label">Active connections</span>
+            <span class="qp-stat__icon qp-stat__icon--primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-9-5.2M6 8a6 6 0 0 0 9 5.2" /><line x1="12" y1="2" x2="12" y2="4" /><line x1="12" y1="20" x2="12" y2="22" /></svg>
+            </span>
+          </div>
+          <div class="qp-stat__value">{{ selectedHealth.activeConnections }}</div>
+        </div>
+
+        <div class="qp-stat">
+          <div class="qp-stat__top">
+            <span class="qp-stat__label">Database size</span>
+            <span class="qp-stat__icon qp-stat__icon--info">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>
+            </span>
+          </div>
+          <div class="qp-stat__value">{{ selectedHealth.databaseSize }}</div>
+        </div>
+
+        <div class="qp-stat">
+          <div class="qp-stat__top">
+            <span class="qp-stat__label">Table count</span>
+            <span class="qp-stat__icon qp-stat__icon--success">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg>
+            </span>
+          </div>
+          <div class="qp-stat__value">{{ selectedHealth.tableCount }}</div>
+        </div>
+
+        <div class="qp-stat">
+          <div class="qp-stat__top">
+            <span class="qp-stat__label">Uptime</span>
+            <span class="qp-stat__icon qp-stat__icon--warning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            </span>
+          </div>
+          <div class="qp-stat__value" style="font-size: 22px;">{{ selectedHealth.databaseUptime }}</div>
+        </div>
+
+        <div class="qp-stat">
+          <div class="qp-stat__top">
+            <span class="qp-stat__label">Status</span>
+            <span class="qp-stat__icon"
+                  [class.qp-stat__icon--success]="selectedHealth.connectionStatus==='CONNECTED'"
+                  [class.qp-stat__icon--danger]="selectedHealth.connectionStatus==='FAILED'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2" /></svg>
+            </span>
+          </div>
+          <div class="qp-stat__value" style="font-size: 20px;">
+            <span class="qp-badge qp-badge--success" *ngIf="selectedHealth.connectionStatus==='CONNECTED'"><span class="qp-badge__dot"></span> Connected</span>
+            <span class="qp-badge qp-badge--danger" *ngIf="selectedHealth.connectionStatus==='FAILED'"><span class="qp-badge__dot"></span> Failed</span>
+          </div>
+        </div>
+
+        <div class="qp-stat">
+          <div class="qp-stat__top">
+            <span class="qp-stat__label">Version</span>
+            <span class="qp-stat__icon qp-stat__icon--primary">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6" /><polyline points="8 6 2 12 8 18" /></svg>
+            </span>
+          </div>
+          <div class="qp-stat__sub" style="margin-top: 2px; font-size: 13px; color: var(--text);">{{ selectedHealth.databaseVersion }}</div>
+        </div>
+      </div>
     </div>
 
-    <div class="metric-card">
-
-      <h3>
-        Table Count
-      </h3>
-
-      <div class="metric-value">
-
-        {{ selectedHealth.tableCount }}
-
+    <!-- Charts -->
+    <div class="db-charts" *ngIf="historyData.length > 0">
+      <div class="qp-card">
+        <div class="qp-card__head"><div><h2>Active connections</h2><p>Trend over time</p></div></div>
+        <div class="qp-card__body"><div class="db-chart"><canvas id="connectionChart"></canvas></div></div>
       </div>
-
+      <div class="qp-card">
+        <div class="qp-card__head"><div><h2>Database size</h2><p>Growth over time (kB)</p></div></div>
+        <div class="qp-card__body"><div class="db-chart"><canvas id="sizeChart"></canvas></div></div>
+      </div>
+      <div class="qp-card">
+        <div class="qp-card__head"><div><h2>Availability</h2><p>Connection uptime</p></div></div>
+        <div class="qp-card__body"><div class="db-chart"><canvas id="statusChart"></canvas></div></div>
+      </div>
     </div>
 
-    <div class="metric-card">
-
-      <h3>
-        Database Uptime
-      </h3>
-
-      <div class="metric-value">
-
-        {{ selectedHealth.databaseUptime }}
-
+    <!-- Session analysis -->
+    <div *ngIf="selectedQueryAnalysis">
+      <div class="qp-section-title">
+        <h2>Session analysis</h2>
+        <span>Current connection activity</span>
       </div>
-
+      <div class="qp-stat-grid">
+        <div class="qp-stat">
+          <div class="qp-stat__top"><span class="qp-stat__label">Active sessions</span>
+            <span class="qp-stat__icon qp-stat__icon--success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg></span>
+          </div>
+          <div class="qp-stat__value">{{ selectedQueryAnalysis.activeSessions }}</div>
+        </div>
+        <div class="qp-stat">
+          <div class="qp-stat__top"><span class="qp-stat__label">Idle sessions</span>
+            <span class="qp-stat__icon qp-stat__icon--warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" /><line x1="8" y1="12" x2="16" y2="12" /></svg></span>
+          </div>
+          <div class="qp-stat__value">{{ selectedQueryAnalysis.idleSessions }}</div>
+        </div>
+        <div class="qp-stat">
+          <div class="qp-stat__top"><span class="qp-stat__label">Total sessions</span>
+            <span class="qp-stat__icon qp-stat__icon--primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg></span>
+          </div>
+          <div class="qp-stat__value">{{ selectedQueryAnalysis.totalSessions }}</div>
+        </div>
+      </div>
     </div>
 
-    <div class="metric-card">
-
-      <h3>
-        Connection Status
-      </h3>
-
-      <div
-        class="metric-value"
-        [class.connected]="selectedHealth.connectionStatus==='CONNECTED'"
-        [class.failed]="selectedHealth.connectionStatus==='FAILED'"
-      >
-
-        {{ selectedHealth.connectionStatus }}
-
+    <!-- Slow queries -->
+    <div class="qp-card" *ngIf="slowQueries.length > 0" style="margin-top: 28px;">
+      <div class="qp-card__head">
+        <div><h2>Slow queries</h2><p>Long-running statements detected</p></div>
+        <span class="qp-badge qp-badge--warning">{{ slowQueries.length }} flagged</span>
       </div>
-
+      <div class="qp-table-wrap">
+        <table class="qp-table">
+          <thead>
+            <tr><th>PID</th><th>User</th><th>State</th><th>Running time</th><th>Query</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let query of slowQueries">
+              <td><span class="qp-mono">{{ query.pid }}</span></td>
+              <td>{{ query.username }}</td>
+              <td><span class="qp-badge qp-badge--neutral">{{ query.state }}</span></td>
+              <td><span class="qp-badge qp-badge--warning">{{ query.runningTime }}</span></td>
+              <td><code class="db-query">{{ query.query }}</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <div class="metric-card">
-
-      <h3>
-        PostgreSQL Version
-      </h3>
-
-      <div
-        class="metric-value version-text"
-      >
-
-        {{ selectedHealth.databaseVersion }}
-
+    <!-- Alerts -->
+    <div *ngIf="alerts.length > 0">
+      <div class="qp-section-title">
+        <h2>Alerts</h2>
+        <span>{{ alerts.length }} active</span>
       </div>
-
+      <div class="db-alerts">
+        <div class="db-alert" *ngFor="let alert of alerts"
+             [class.db-alert--critical]="alert.severity === 'CRITICAL' || alert.severity === 'HIGH'">
+          <div class="db-alert__icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          </div>
+          <div class="db-alert__body">
+            <div class="db-alert__top">
+              <h3>{{ alert.alertType }}</h3>
+              <span class="qp-badge"
+                    [class.qp-badge--danger]="alert.severity === 'CRITICAL' || alert.severity === 'HIGH'"
+                    [class.qp-badge--warning]="alert.severity === 'MEDIUM'"
+                    [class.qp-badge--neutral]="alert.severity === 'LOW'">{{ alert.severity }}</span>
+            </div>
+            <p>{{ alert.message }}</p>
+            <span class="db-alert__time">{{ alert.createdAt }}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
-
-  <!-- Active Connections Chart -->
-
-  <!-- Charts -->
-
-<div
-  class="health-card"
-  *ngIf="historyData.length > 0"
->
-
-  <h2>
-
-    Active Connections Trend
-
-  </h2>
-
-  <canvas
-    id="connectionChart"
-  >
-  </canvas>
-
-</div>
-
-
-<div
-  class="health-card"
-  *ngIf="historyData.length > 0"
->
-
-  <h2>
-
-    Database Size Trend
-
-  </h2>
-
-  <canvas
-    id="sizeChart"
-  >
-  </canvas>
-
-</div>
-
-
-<div
-  class="health-card"
-  *ngIf="historyData.length > 0"
->
-
-  <h2>
-
-    Availability Trend
-
-  </h2>
-
-  <canvas
-    id="statusChart"
-  >
-  </canvas>
-
-</div>
-
-
-<!-- Query Analyzer -->
-
-<div
-  class="metrics-container"
-  *ngIf="selectedQueryAnalysis"
->
-
-  <div class="metric-card">
-
-    <h3>
-
-      Active Sessions
-
-    </h3>
-
-    <div class="metric-value">
-
-      {{ selectedQueryAnalysis.activeSessions }}
-
-    </div>
-
-  </div>
-
-  <div class="metric-card">
-
-    <h3>
-
-      Idle Sessions
-
-    </h3>
-
-    <div class="metric-value">
-
-      {{ selectedQueryAnalysis.idleSessions }}
-
-    </div>
-
-  </div>
-
-  <div class="metric-card">
-
-    <h3>
-
-      Total Sessions
-
-    </h3>
-
-    <div class="metric-value">
-
-      {{ selectedQueryAnalysis.totalSessions }}
-
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- Slow Queries -->
-
-<!-- Slow Queries -->
-
-<div
-  class="table-card"
-  *ngIf="slowQueries.length > 0"
->
-
-  <h2>
-
-    Slow Queries
-
-  </h2>
-
-  <table>
-
-    <thead>
-
-      <tr>
-
-        <th>PID</th>
-
-        <th>User</th>
-
-        <th>State</th>
-
-        <th>Running Time</th>
-
-        <th>Query</th>
-
-      </tr>
-
-    </thead>
-
-    <tbody>
-
-      <tr
-        *ngFor="let query of slowQueries"
-      >
-
-        <td>
-
-          {{ query.pid }}
-
-        </td>
-
-        <td>
-
-          {{ query.username }}
-
-        </td>
-
-        <td>
-
-          {{ query.state }}
-
-        </td>
-
-        <td>
-
-          {{ query.runningTime }}
-
-        </td>
-
-        <td>
-
-          <pre>
-
-{{ query.query }}
-
-          </pre>
-
-        </td>
-
-      </tr>
-
-    </tbody>
-
-  </table>
-
-</div>
-
-
-
-<!-- Alerts -->
-
-<div
-  class="alerts-container"
-  *ngIf="alerts.length > 0"
->
-
-  <h2>
-
-    Alerts
-
-  </h2>
-
-  <div
-    class="alert-card"
-    *ngFor="let alert of alerts"
-  >
-
-    <h3>
-
-      {{ alert.alertType }}
-
-    </h3>
-
-    <p>
-
-      Severity :
-
-      <b>
-
-        {{ alert.severity }}
-
-      </b>
-
-    </p>
-
-    <p>
-
-      {{ alert.message }}
-
-    </p>
-
-    <p>
-
-      {{ alert.createdAt }}
-
-    </p>
-
-  </div>
-
-</div>
-
 </div>

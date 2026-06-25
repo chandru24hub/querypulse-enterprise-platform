@@ -101,4 +101,46 @@ getAlerts(
   );
 
 }
+
+getAllAlerts(): Observable<any[]> {
+
+  return this.http.get<any[]>(
+
+    `${this.apiUrl}/all/alerts`
+
+  );
+}
+
+exportPdf(databaseId: string): Observable<Blob> {
+
+  return this.http.get(
+
+    `${this.apiUrl}/${databaseId}/export/pdf`,
+
+    { responseType: 'blob' }
+
+  );
+}
+
+exportExcel(databaseId: string): Observable<Blob> {
+
+  return this.http.get(
+
+    `${this.apiUrl}/${databaseId}/export/excel`,
+
+    { responseType: 'blob' }
+
+  );
+}
+
+optimizeQuery(sqlQuery: string): Observable<any> {
+
+  return this.http.post(
+
+    `${this.apiUrl}/query/optimize`,
+
+    { query: sqlQuery }
+
+  );
+}
 }

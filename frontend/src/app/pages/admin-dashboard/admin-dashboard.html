@@ -1,127 +1,199 @@
 <app-sidebar></app-sidebar>
 <app-toast></app-toast>
-<div class="dashboard-container">
 
-  <h1 class="dashboard-title">
-    Admin User Management
-  </h1>
+<div class="qp-shell">
 
-  <div class="status-cards">
-
-    <div class="status-card pending">
-
-      <h2>Pending</h2>
-
-      <p>{{ pendingUsers.length }}</p>
-
+  <header class="qp-topbar">
+    <div class="qp-topbar__title">
+      <h1>User Management</h1>
+      <p>Review and approve workspace access requests</p>
     </div>
+    <button class="qp-btn qp-btn--ghost" (click)="refreshAllData()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
+        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+      </svg>
+      Refresh
+    </button>
+  </header>
 
-    <div class="status-card approved">
+  <div class="qp-page">
 
-      <h2>Approved</h2>
+    <!-- Stat cards -->
+    <div class="qp-stat-grid">
 
-      <p>{{ approvedUsers.length }}</p>
+      <div class="qp-stat">
+        <div class="qp-stat__top">
+          <span class="qp-stat__label">Pending</span>
+          <span class="qp-stat__icon qp-stat__icon--warning">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+            </svg>
+          </span>
+        </div>
+        <div class="qp-stat__value">{{ pendingUsers.length }}</div>
+        <div class="qp-stat__sub">Awaiting your review</div>
+      </div>
 
-    </div>
+      <div class="qp-stat">
+        <div class="qp-stat__top">
+          <span class="qp-stat__label">Approved</span>
+          <span class="qp-stat__icon qp-stat__icon--success">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </span>
+        </div>
+        <div class="qp-stat__value">{{ approvedUsers.length }}</div>
+        <div class="qp-stat__sub">Active members</div>
+      </div>
 
-    <div class="status-card rejected">
-
-      <h2>Rejected</h2>
-
-      <p>{{ rejectedUsers.length }}</p>
-
-    </div>
-
-  </div>
-<h2 class="section-title">
-  Pending User Approvals
-</h2>
-
-<input
-  type="text"
-  class="search-input"
-  placeholder="Search Pending Users..."
-  [(ngModel)]="pendingSearch"
-  (input)="filterPendingUsers()"
-/>
-
-<div
-  *ngIf="
-    filteredPendingUsers.length === 0
-    && !isLoading
-  "
-  class="empty-message"
->
-  No pending users found
-</div>
-
-<div class="users-container">
-
-  <div
-    class="user-card"
-    *ngFor="
-      let user of filteredPendingUsers
-    "
-  >
-
-    <h2>
-      {{ user.firstName }}
-      {{ user.lastName }}
-    </h2>
-
-    <p>{{ user.email }}</p>
-
-    <p>{{ user.username }}</p>
-
-    <div class="button-group">
-
-      <button
-        class="approve-btn"
-        (click)="approveUser(user.id)"
-      >
-        Approve
-      </button>
-
-      <button
-        class="reject-btn"
-        (click)="openRejectModal(user.id)"
-      >
-        Reject
-      </button>
-
-    </div>
-
-  </div>
-
-    <div class="modal">
-
-      <h2>Reject User</h2>
-
-      <textarea
-        [(ngModel)]="rejectionReason"
-        placeholder="Enter rejection reason"
-      ></textarea>
-
-      <div class="modal-buttons">
-
-        <button
-          class="approve-btn"
-          (click)="rejectUser()"
-        >
-          Submit
-        </button>
-
-        <button
-          class="reject-btn"
-          (click)="closeRejectModal()"
-        >
-          Cancel
-        </button>
-
+      <div class="qp-stat">
+        <div class="qp-stat__top">
+          <span class="qp-stat__label">Rejected</span>
+          <span class="qp-stat__icon qp-stat__icon--danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+          </span>
+        </div>
+        <div class="qp-stat__value">{{ rejectedUsers.length }}</div>
+        <div class="qp-stat__sub">Declined requests</div>
       </div>
 
     </div>
 
-  </div>
+    <!-- Pending approvals -->
+    <div class="qp-card" style="margin-top: 28px;">
+      <div class="qp-card__head">
+        <div>
+          <h2>Pending approvals</h2>
+          <p>{{ filteredPendingUsers.length }} request(s) awaiting action</p>
+        </div>
+        <div class="qp-search" style="width: 280px; max-width: 45vw;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input class="qp-input" type="text" placeholder="Search pending users…"
+                 [(ngModel)]="pendingSearch" (input)="filterPendingUsers()" />
+        </div>
+      </div>
 
+      <!-- Loading -->
+      <div class="qp-empty" *ngIf="isLoading">
+        <span class="qp-spin" style="border-color: rgba(79,70,229,0.25); border-top-color: var(--primary);"></span>
+        <p style="margin-top: 12px;">Loading requests…</p>
+      </div>
+
+      <!-- Empty -->
+      <div class="qp-empty" *ngIf="filteredPendingUsers.length === 0 && !isLoading">
+        <span class="qp-empty__icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+            <line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
+          </svg>
+        </span>
+        <h3>No pending requests</h3>
+        <p>New access requests will appear here for your review.</p>
+      </div>
+
+      <!-- Table -->
+      <div class="qp-table-wrap" *ngIf="filteredPendingUsers.length > 0 && !isLoading">
+        <table class="qp-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Username</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of filteredPendingUsers">
+              <td>
+                <div class="qp-user-cell">
+                  <div class="qp-avatar">{{ (user.firstName || '?').charAt(0) }}{{ (user.lastName || '').charAt(0) }}</div>
+                  <span class="qp-user-name">{{ user.firstName }} {{ user.lastName }}</span>
+                </div>
+              </td>
+              <td>{{ user.email }}</td>
+              <td><span class="qp-mono">{{ user.username }}</span></td>
+              <td>
+                <div class="qp-row-actions">
+                  <button class="qp-btn qp-btn--success qp-btn--sm" (click)="openApprovalModal(user)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                         stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    Approve
+                  </button>
+                  <button class="qp-btn qp-btn--danger-soft qp-btn--sm" (click)="openRejectModal(user.id)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                         stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    Reject
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Approval modal -->
+<div class="qp-modal-overlay" *ngIf="showApprovalModal" (click)="closeApprovalModal()">
+  <div class="qp-modal" (click)="$event.stopPropagation()">
+    <div class="qp-modal__head">
+      <h2>Approve access request</h2>
+      <p *ngIf="selectedUserForApproval" style="color: var(--text-muted); font-size: 14px;">
+        Approving {{ selectedUserForApproval.firstName }} {{ selectedUserForApproval.lastName }}
+      </p>
+    </div>
+    <div class="qp-modal__body">
+      <div class="qp-field">
+        <label class="qp-label">Assign user role</label>
+        <select class="qp-select" [(ngModel)]="approvalRole">
+          <option value="USER">Member (Limited Access)</option>
+          <option value="ADMIN">Administrator (Full Access)</option>
+        </select>
+      </div>
+      <div class="qp-field">
+        <label class="qp-label">Approval message (optional)</label>
+        <textarea class="qp-textarea" [(ngModel)]="approvalMessage"
+                  placeholder="Send a welcome message to the user…"></textarea>
+      </div>
+    </div>
+    <div class="qp-modal__foot">
+      <button class="qp-btn qp-btn--ghost" (click)="closeApprovalModal()">Cancel</button>
+      <button class="qp-btn qp-btn--success" (click)="approveUser()">Approve & Send Email</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject modal -->
+<div class="qp-modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+  <div class="qp-modal" (click)="$event.stopPropagation()">
+    <div class="qp-modal__head">
+      <h2>Reject access request</h2>
+      <p>Provide a reason — the applicant will see this in their email.</p>
+    </div>
+    <div class="qp-modal__body">
+      <div class="qp-field">
+        <label class="qp-label">Reason for rejection</label>
+        <textarea class="qp-textarea" [(ngModel)]="rejectionReason"
+                  placeholder="e.g. Unable to verify your organization email…"></textarea>
+      </div>
+    </div>
+    <div class="qp-modal__foot">
+      <button class="qp-btn qp-btn--ghost" (click)="closeRejectModal()">Cancel</button>
+      <button class="qp-btn qp-btn--danger" (click)="rejectUser()">Reject & Send Email</button>
+    </div>
+  </div>
 </div>

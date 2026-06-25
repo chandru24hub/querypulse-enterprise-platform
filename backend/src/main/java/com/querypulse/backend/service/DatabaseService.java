@@ -57,4 +57,8 @@ List<DatabaseAlertResponse>
 getAlerts(
         UUID databaseId
 );
+
+List<DatabaseAlertResponse> getAllAlerts();
+
+String getQueryOptimizationSuggestions(String sqlQuery);
 }

@@ -56,9 +56,17 @@ implements OnInit {
 
   errorMessage = '';
 
+  showApprovalModal = false;
+
   showRejectModal = false;
 
   selectedUserId = '';
+
+  selectedUserForApproval: any = null;
+
+  approvalRole = 'USER';
+
+  approvalMessage = '';
 
   rejectionReason = '';
 
@@ -207,16 +215,58 @@ implements OnInit {
   }
 
   /*
+    OPEN APPROVAL MODAL
+  */
+
+  openApprovalModal(user: any): void {
+
+    this.selectedUserForApproval = user;
+
+    this.selectedUserId = user.id;
+
+    this.approvalRole = 'USER';
+
+    this.approvalMessage = '';
+
+    this.showApprovalModal = true;
+  }
+
+  /*
+    CLOSE APPROVAL MODAL
+  */
+
+  closeApprovalModal(): void {
+
+    this.showApprovalModal = false;
+
+    this.selectedUserForApproval = null;
+
+    this.approvalRole = 'USER';
+
+    this.approvalMessage = '';
+  }
+
+  /*
     APPROVE USER
   */
 
-  approveUser(userId: string): void {
+  approveUser(): void {
+
+    if (!this.selectedUserId) {
+      this.toastService.showWarning('No user selected');
+      return;
+    }
+
+    const approvalData = {
+      role: this.approvalRole,
+      message: this.approvalMessage || 'Welcome to QueryPulse!'
+    };
 
     this.http.post(
 
-      `http://localhost:8080/api/admin/approve-user/${userId}`,
+      `http://localhost:8080/api/admin/approve-user/${this.selectedUserId}`,
 
-      {},
+      approvalData,
 
       {
         responseType: 'text'
@@ -227,8 +277,10 @@ implements OnInit {
       next: (response) => {
 
         this.toastService.showSuccess(
-          response
+          'User approved successfully'
         );
+
+        this.closeApprovalModal();
 
         this.refreshAllData();
       },
@@ -281,11 +333,15 @@ implements OnInit {
       return;
     }
 
+    const rejectionData = {
+      message: this.rejectionReason
+    };
+
     this.http.post(
 
-      `http://localhost:8080/api/admin/reject-user/${this.selectedUserId}?reason=${this.rejectionReason}`,
+      `http://localhost:8080/api/admin/reject-user/${this.selectedUserId}`,
 
-      {},
+      rejectionData,
 
       {
         responseType: 'text'
@@ -296,7 +352,7 @@ implements OnInit {
       next: (response) => {
 
         this.toastService.showSuccess(
-          response
+          'User rejected successfully'
         );
 
         this.closeRejectModal();

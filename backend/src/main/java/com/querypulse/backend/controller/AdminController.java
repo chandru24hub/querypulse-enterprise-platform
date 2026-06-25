@@ -2,6 +2,7 @@ package com.querypulse.backend.controller;
 
 import com.querypulse.backend.entity.User;
 import com.querypulse.backend.service.AdminService;
+import com.querypulse.backend.dto.ApprovalRequest;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,10 +45,17 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/approve-user/{userId}")
     public String approveUser(
-            @PathVariable UUID userId
+
+            @PathVariable UUID userId,
+
+            @RequestBody ApprovalRequest request
     ) {
 
-        return adminService.approveUser(userId);
+        return adminService.approveUser(
+                userId,
+                request.getRole(),
+                request.getMessage()
+        );
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -56,12 +64,12 @@ public class AdminController {
 
             @PathVariable UUID userId,
 
-            @RequestParam String reason
+            @RequestBody ApprovalRequest request
     ) {
 
         return adminService.rejectUser(
                 userId,
-                reason
+                request.getMessage()
         );
     }
 }

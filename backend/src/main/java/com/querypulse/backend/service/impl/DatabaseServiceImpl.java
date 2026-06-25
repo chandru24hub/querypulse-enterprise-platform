@@ -4,7 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import com.querypulse.backend.repository.DatabaseHealthHistoryRepository;
@@ -37,6 +39,7 @@ import com.querypulse.backend.dto.SlowQueryResponse;
 import com.querypulse.backend.entity.DatabaseAlert;
 import com.querypulse.backend.dto.DatabaseAlertResponse;
 import com.querypulse.backend.repository.DatabaseAlertRepository;
+import com.querypulse.backend.service.QueryOptimizationService;
 
 @Service
 @RequiredArgsConstructor
@@ -54,6 +57,9 @@ implements DatabaseService {
 
         private final DatabaseAlertRepository
         databaseAlertRepository;
+
+    private final QueryOptimizationService
+            queryOptimizationService;
 
     @Override
     public MonitoredDatabase createDatabase(
@@ -799,6 +805,11 @@ getAlerts(
         UUID databaseId
 ) {
 
+    MonitoredDatabase database = monitoredDatabaseRepository
+            .findById(databaseId)
+            .orElse(null);
+    String dbName = database != null ? database.getDisplayName() : "Unknown";
+
     return databaseAlertRepository
 
             .findByDatabaseIdOrderByCreatedAtDesc(
@@ -814,6 +825,12 @@ getAlerts(
                             DatabaseAlertResponse
 
                                     .builder()
+
+                                    .id(alert.getId().toString())
+
+                                    .databaseId(alert.getDatabaseId().toString())
+
+                                    .databaseName(dbName)
 
                                     .severity(
                                             alert.getSeverity()
@@ -838,6 +855,40 @@ getAlerts(
 
             .toList();
 
+}
+
+@Override
+public List<DatabaseAlertResponse> getAllAlerts() {
+
+    Map<UUID, String> databaseNameMap = monitoredDatabaseRepository
+            .findAll()
+            .stream()
+            .collect(java.util.stream.Collectors.toMap(
+                    MonitoredDatabase::getId,
+                    MonitoredDatabase::getDisplayName
+            ));
+
+    return databaseAlertRepository
+            .findAll()
+            .stream()
+            .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+            .map(alert ->
+                    DatabaseAlertResponse.builder()
+                            .id(alert.getId().toString())
+                            .databaseId(alert.getDatabaseId().toString())
+                            .databaseName(databaseNameMap.getOrDefault(alert.getDatabaseId(), "Unknown"))
+                            .severity(alert.getSeverity())
+                            .alertType(alert.getAlertType())
+                            .message(alert.getMessage())
+                            .createdAt(alert.getCreatedAt().toString())
+                            .build()
+            )
+            .toList();
+}
+
+@Override
+public String getQueryOptimizationSuggestions(String sqlQuery) {
+    return queryOptimizationService.getQueryOptimizationSuggestions(sqlQuery);
 }
 
 }
