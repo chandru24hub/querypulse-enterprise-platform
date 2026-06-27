@@ -37,13 +37,16 @@ HttpInterceptorFn = (
   const token =
     localStorage.getItem('token');
 
+  const isAuthEndpoint =
+    req.url.includes('/api/auth/');
+
   /*
     ATTACH JWT TOKEN
   */
 
   let modifiedRequest = req;
 
-  if (token) {
+  if (token && !isAuthEndpoint) {
 
     modifiedRequest =
       req.clone({

@@ -6,13 +6,12 @@ from '@angular/common';
 import { FormsModule }
 from '@angular/forms';
 
-import {
-  HttpClient,
-  HttpClientModule
-} from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 import { Router }
 from '@angular/router';
+
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-register',
@@ -21,8 +20,7 @@ from '@angular/router';
 
   imports: [
     CommonModule,
-    FormsModule,
-    HttpClientModule
+    FormsModule
   ],
 
   templateUrl: './register.html',
@@ -103,7 +101,7 @@ export class Register {
     };
 
     this.http.post<any>(
-      'http://localhost:8080/api/auth/register',
+      `${environment.apiUrl}/auth/register`,
       payload
     ).subscribe({
 

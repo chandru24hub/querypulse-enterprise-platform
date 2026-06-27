@@ -3,19 +3,20 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { DatabaseService } from '../../services/database.service';
+import { Auth } from '../../services/auth';
 import { ToastComponent } from '../../shared/toast/toast';
 import { ToastService } from '../../shared/toast/toast.service';
+import { DatabaseFleet } from '../../components/database-fleet/database-fleet';
 
 @Component({
   selector: 'app-user-dashboard',
   standalone: true,
-  imports: [CommonModule, ToastComponent],
+  imports: [CommonModule, ToastComponent, DatabaseFleet],
   templateUrl: './user-dashboard.html',
   styleUrl: './user-dashboard.css',
 })
 export class UserDashboard implements OnInit {
   databases: any[] = [];
-  isLoading = false;
 
   selectedDb: any = null;
   selectedHealth: any = null;
@@ -24,33 +25,25 @@ export class UserDashboard implements OnInit {
 
   constructor(
     private databaseService: DatabaseService,
+    private auth: Auth,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef,
     private router: Router,
   ) {}
 
-  ngOnInit(): void {
-    this.loadDatabases();
+  ngOnInit(): void {}
+
+  onDatabasesChanged(databases: any[]): void {
+    this.databases = databases;
   }
 
   /* -------- Greeting from JWT -------- */
   get userName(): string {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return 'there';
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const sub: string = payload.sub || '';
-      // Use the part before "@" of the email as a friendly name
-      const name = sub.includes('@') ? sub.split('@')[0] : sub;
-      return name ? name.charAt(0).toUpperCase() + name.slice(1) : 'there';
-    } catch {
-      return 'there';
-    }
+    return this.auth.getUserName();
   }
 
   get initials(): string {
-    const n = this.userName;
-    return (n.charAt(0) || 'U').toUpperCase();
+    return this.auth.getInitials();
   }
 
   /* -------- Aggregate stats -------- */
@@ -75,16 +68,13 @@ export class UserDashboard implements OnInit {
 
   /* -------- Data loading -------- */
   loadDatabases(): void {
-    this.isLoading = true;
     this.databaseService.getAllDatabases().subscribe({
       next: (response: any) => {
         this.databases = Array.isArray(response) ? response : response?.data ?? [];
-        this.isLoading = false;
         this.cdr.detectChanges();
       },
       error: (error) => {
         console.error(error);
-        this.isLoading = false;
         this.toastService.showError('Failed to load databases');
       },
     });
@@ -175,8 +165,7 @@ export class UserDashboard implements OnInit {
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    this.auth.logout();
     this.router.navigate(['/']);
   }
 }

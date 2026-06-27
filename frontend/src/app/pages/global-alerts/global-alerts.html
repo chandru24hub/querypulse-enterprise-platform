@@ -15,6 +15,13 @@
     </div>
 
     <div class="ga__topbar-right">
+      <button class="qp-btn qp-btn--ghost qp-btn--sm" (click)="goToDashboard()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+        </svg>
+        Back to dashboard
+      </button>
       <button class="qp-btn qp-btn--ghost qp-btn--sm" (click)="loadAllAlerts()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
@@ -60,24 +67,24 @@
 
       <div class="qp-stat">
         <div class="qp-stat__top">
-          <span class="qp-stat__label">Critical</span>
+          <span class="qp-stat__label">Active</span>
           <span class="qp-stat__icon qp-stat__icon--danger">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
           </span>
         </div>
-        <div class="qp-stat__value">{{ criticalCount }}</div>
-        <div class="qp-stat__sub">Require immediate action</div>
+        <div class="qp-stat__value">{{ activeCount }}</div>
+        <div class="qp-stat__sub">Unresolved &amp; need attention</div>
       </div>
 
       <div class="qp-stat">
         <div class="qp-stat__top">
-          <span class="qp-stat__label">High</span>
-          <span class="qp-stat__icon qp-stat__icon--warning">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+          <span class="qp-stat__label">Resolved</span>
+          <span class="qp-stat__icon qp-stat__icon--success">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
           </span>
         </div>
-        <div class="qp-stat__value">{{ highCount }}</div>
-        <div class="qp-stat__sub">Need attention soon</div>
+        <div class="qp-stat__value">{{ resolvedCount }}</div>
+        <div class="qp-stat__sub">Condition has cleared</div>
       </div>
     </div>
 
@@ -92,6 +99,18 @@
                     [class.ga__filter-btn--active]="severityFilter === sev"
                     (click)="onSeverityChange(sev)">
               {{ sev }}
+            </button>
+          </div>
+        </div>
+
+        <div class="ga__filter-group">
+          <label class="ga__label">Status</label>
+          <div class="ga__filter-buttons">
+            <button *ngFor="let st of statuses"
+                    class="ga__filter-btn"
+                    [class.ga__filter-btn--active]="statusFilter === st"
+                    (click)="onStatusChange(st)">
+              {{ st }}
             </button>
           </div>
         </div>
@@ -150,23 +169,35 @@
       <!-- Alerts -->
       <div class="ga__alerts-list" *ngIf="!isLoading && filteredAlerts.length > 0">
         <div class="ga__alert" *ngFor="let alert of paginatedAlerts"
-             [class.ga__alert--critical]="alert.severity === 'CRITICAL'"
-             [class.ga__alert--high]="alert.severity === 'HIGH'"
-             [class.ga__alert--medium]="alert.severity === 'MEDIUM'">
+             [class.ga__alert--critical]="!alert.resolved && alert.severity === 'CRITICAL'"
+             [class.ga__alert--high]="!alert.resolved && alert.severity === 'HIGH'"
+             [class.ga__alert--medium]="!alert.resolved && alert.severity === 'MEDIUM'"
+             [class.ga__alert--resolved]="alert.resolved">
           <div class="ga__alert-header">
             <div>
               <h3>{{ alert.alertType }}</h3>
               <span class="ga__alert-db">{{ alert.databaseName }}</span>
             </div>
-            <span class="qp-badge"
-                  [class.qp-badge--danger]="alert.severity === 'CRITICAL' || alert.severity === 'HIGH'"
-                  [class.qp-badge--warning]="alert.severity === 'MEDIUM'"
-                  [class.qp-badge--neutral]="alert.severity === 'LOW'">
-              {{ alert.severity }}
-            </span>
+            <div class="ga__alert-badges">
+              <span class="qp-badge qp-badge--success" *ngIf="alert.resolved">
+                <span class="qp-badge__dot"></span> Resolved
+              </span>
+              <span class="qp-badge qp-badge--danger qp-badge--pulse" *ngIf="!alert.resolved">
+                <span class="qp-badge__dot"></span> Active
+              </span>
+              <span class="qp-badge"
+                    [class.qp-badge--danger]="alert.severity === 'CRITICAL' || alert.severity === 'HIGH'"
+                    [class.qp-badge--warning]="alert.severity === 'MEDIUM'"
+                    [class.qp-badge--neutral]="alert.severity === 'LOW'">
+                {{ alert.severity }}
+              </span>
+            </div>
           </div>
           <p class="ga__alert-message">{{ alert.message }}</p>
-          <span class="ga__alert-time">{{ alert.createdAt }}</span>
+          <div class="ga__alert-foot">
+            <span class="ga__alert-time">Raised {{ alert.createdAt }}</span>
+            <span class="ga__alert-time" *ngIf="alert.resolved && alert.resolvedAt">· Resolved {{ alert.resolvedAt }}</span>
+          </div>
         </div>
       </div>
 

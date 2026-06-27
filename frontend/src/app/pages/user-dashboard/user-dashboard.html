@@ -15,7 +15,7 @@
     </div>
 
     <div class="ud__topbar-right">
-      <button class="qp-btn qp-btn--ghost qp-btn--sm" (click)="loadDatabases()">
+      <button class="qp-btn qp-btn--ghost qp-btn--sm" (click)="fleet.loadDatabases()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
              stroke-linecap="round" stroke-linejoin="round">
           <polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" />
@@ -96,67 +96,10 @@
     </div>
 
     <!-- Fleet list -->
-    <div class="qp-card">
-      <div class="qp-card__head">
-        <div>
-          <h2>Database fleet</h2>
-          <p>Select a database to view live health &amp; alerts</p>
-        </div>
-      </div>
-
-      <!-- Loading -->
-      <div class="qp-empty" *ngIf="isLoading">
-        <span class="qp-spin" style="border-color: rgba(79,70,229,0.25); border-top-color: var(--primary);"></span>
-        <p style="margin-top: 12px;">Loading your databases…</p>
-      </div>
-
-      <!-- Empty -->
-      <div class="qp-empty" *ngIf="!isLoading && databases.length === 0">
-        <span class="qp-empty__icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3" /></svg>
-        </span>
-        <h3>No databases available</h3>
-        <p>Once an administrator registers a database, it will appear here for monitoring.</p>
-      </div>
-
-      <!-- Table -->
-      <div class="qp-table-wrap" *ngIf="!isLoading && databases.length > 0">
-        <table class="qp-table">
-          <thead>
-            <tr>
-              <th>Database</th>
-              <th>Engine</th>
-              <th>Endpoint</th>
-              <th>Status</th>
-              <th style="text-align: right;"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let db of databases" class="ud__row"
-                [class.ud__row--active]="selectedDb?.id === db.id" (click)="viewHealth(db)">
-              <td>
-                <div class="ud__db-cell">
-                  <div class="ud__db-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>
-                  </div>
-                  <span class="ud__db-name">{{ db.displayName }}</span>
-                </div>
-              </td>
-              <td><span class="qp-badge qp-badge--neutral">{{ db.databaseType }}</span></td>
-              <td><span class="qp-mono">{{ db.host }}:{{ db.port }}</span></td>
-              <td>
-                <span class="qp-badge qp-badge--success qp-badge--pulse" *ngIf="db.connectionStatus === 'CONNECTED'"><span class="qp-badge__dot"></span> Connected</span>
-                <span class="qp-badge qp-badge--danger" *ngIf="db.connectionStatus === 'FAILED'"><span class="qp-badge__dot"></span> Failed</span>
-                <span class="qp-badge qp-badge--neutral" *ngIf="!db.connectionStatus">Not tested</span>
-              </td>
-              <td style="text-align: right;">
-                <span class="ud__view">View<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6" /></svg></span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
+    <app-database-fleet #fleet
+      (viewHealth)="viewHealth($event)"
+      (databasesChanged)="onDatabasesChanged($event)">
+    </app-database-fleet>
 
   </main>
 

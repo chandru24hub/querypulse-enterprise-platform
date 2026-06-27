@@ -210,11 +210,39 @@
   background: rgba(234, 179, 8, 0.05);
 }
 
+.ga__alert--resolved {
+  border-left-color: var(--success);
+  background: var(--surface-2);
+  opacity: 0.85;
+}
+
+.ga__alert--resolved .ga__alert-header h3,
+.ga__alert--resolved .ga__alert-message {
+  color: var(--text-muted);
+}
+
 .ga__alert-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 12px;
   margin-bottom: 8px;
+}
+
+.ga__alert-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.ga__alert-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .ga__alert-header h3 {

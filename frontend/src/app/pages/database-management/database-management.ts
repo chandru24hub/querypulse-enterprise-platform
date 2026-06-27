@@ -16,6 +16,10 @@ import {
 } from '../../components/sidebar/sidebar';
 
 import {
+  DatabaseFleet
+} from '../../components/database-fleet/database-fleet';
+
+import {
   DatabaseService
 } from '../../services/database.service';
 
@@ -41,7 +45,8 @@ import {
     CommonModule,
     FormsModule,
     Sidebar,
-    ToastComponent
+    ToastComponent,
+    DatabaseFleet
   ],
 
   templateUrl:
@@ -72,23 +77,6 @@ implements OnInit {
 
 statusChart: any;
 
-  databaseForm = {
-
-    displayName: '',
-
-    databaseType: 'POSTGRESQL',
-
-    host: '',
-
-    port: 5432,
-
-    databaseName: '',
-
-    username: '',
-
-    password: ''
-  };
-
   selectedDatabaseName = '';
 
   constructor(
@@ -106,135 +94,19 @@ statusChart: any;
     );
   }
 
-  ngOnInit(): void {
+  ngOnInit(): void {}
 
-    this.loadDatabases();
-  }
-
-  createDatabase(): void {
-
-    if (
-
-      !this.databaseForm.displayName ||
-
-      !this.databaseForm.host ||
-
-      !this.databaseForm.databaseName ||
-
-      !this.databaseForm.username ||
-
-      !this.databaseForm.password
-
-    ) {
-
-      this.toastService.showWarning(
-        'Please fill all required fields'
-      );
-
-      return;
-    }
-
-    this.databaseService
-      .createDatabase(
-        this.databaseForm
-      )
-      .subscribe({
-
-        next: () => {
-
-          this.toastService.showSuccess(
-            'Database registered successfully'
-          );
-
-          this.resetForm();
-
-          this.loadDatabases();
-        },
-
-        error: (error) => {
-
-          console.error(
-            error
-          );
-
-          this.toastService.showError(
-            'Failed to register database'
-          );
-        }
-
-      });
-  }
-
-  loadDatabases(): void {
-
-    this.databaseService
-      .getAllDatabases()
-      .subscribe({
-
-        next: (response) => {
-
-          this.databases =
-            response;
-        },
-
-        error: (error) => {
-
-          console.error(
-            error
-          );
-        }
-
-      });
-  }
-
-  testConnection(
-    databaseId: string
-  ): void {
-
-    this.databaseService
-      .testConnection(
-        databaseId
-      )
-      .subscribe({
-
-        next: (response) => {
-
-          if (
-            response.success
-          ) {
-
-            this.toastService.showSuccess(
-              'Database connection successful'
-            );
-
-          } else {
-
-            this.toastService.showError(
-              response.message ||
-              'Database connection failed'
-            );
-          }
-
-          this.loadDatabases();
-        },
-
-        error: (error) => {
-
-          console.error(
-            error
-          );
-
-          this.toastService.showError(
-            'Connection test failed'
-          );
-        }
-
-      });
+  onDatabasesChanged(databases: any[]): void {
+    this.databases = databases;
   }
 
   viewHealth(
-    databaseId: string
+    db: any
   ): void {
+
+    const databaseId = db.id;
+
+    this.selectedDatabaseName = db.displayName;
 
     this.databaseService
       .getHealth(
@@ -651,27 +523,6 @@ loadAlerts(
           ticks: { color: '#94a3b8', font: { family: 'Inter, sans-serif', size: 11 } },
         },
       },
-    };
-  }
-
-  resetForm(): void {
-
-    this.databaseForm = {
-
-      displayName: '',
-
-      databaseType:
-        'POSTGRESQL',
-
-      host: '',
-
-      port: 5432,
-
-      databaseName: '',
-
-      username: '',
-
-      password: ''
     };
   }
 

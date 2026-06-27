@@ -26,6 +26,8 @@ import {
   ToastService
 } from '../../shared/toast/toast.service';
 
+import { environment } from '../../../environments/environment';
+
 @Component({
   selector: 'app-admin-dashboard',
 
@@ -55,6 +57,8 @@ implements OnInit {
   isLoading = false;
 
   errorMessage = '';
+
+  private adminUrl = `${environment.apiUrl}/admin`;
 
   showApprovalModal = false;
 
@@ -103,7 +107,7 @@ implements OnInit {
 
     this.http.get<any[]>(
 
-      'http://localhost:8080/api/admin/pending-users'
+      `${this.adminUrl}/pending-users`
 
     ).subscribe({
 
@@ -150,7 +154,7 @@ implements OnInit {
 
     this.http.get<any[]>(
 
-      'http://localhost:8080/api/admin/approved-users'
+      `${this.adminUrl}/approved-users`
 
     ).subscribe({
 
@@ -186,7 +190,7 @@ implements OnInit {
 
     this.http.get<any[]>(
 
-      'http://localhost:8080/api/admin/rejected-users'
+      `${this.adminUrl}/rejected-users`
 
     ).subscribe({
 
@@ -264,7 +268,7 @@ implements OnInit {
 
     this.http.post(
 
-      `http://localhost:8080/api/admin/approve-user/${this.selectedUserId}`,
+      `${this.adminUrl}/approve-user/${this.selectedUserId}`,
 
       approvalData,
 
@@ -339,7 +343,7 @@ implements OnInit {
 
     this.http.post(
 
-      `http://localhost:8080/api/admin/reject-user/${this.selectedUserId}`,
+      `${this.adminUrl}/reject-user/${this.selectedUserId}`,
 
       rejectionData,
 

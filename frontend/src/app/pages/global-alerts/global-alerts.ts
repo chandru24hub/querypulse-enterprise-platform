@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
 import { DatabaseService } from '../../services/database.service';
+import { Auth } from '../../services/auth';
 import { ToastComponent } from '../../shared/toast/toast';
 import { ToastService } from '../../shared/toast/toast.service';
 
@@ -20,16 +21,19 @@ export class GlobalAlertsComponent implements OnInit {
 
   severityFilter = 'ALL';
   alertTypeFilter = 'ALL';
+  statusFilter = 'ACTIVE';
   searchTerm = '';
   sortBy = 'date_desc';
 
   severities = ['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'];
+  statuses = ['ALL', 'ACTIVE', 'RESOLVED'];
   alertTypes: string[] = [];
   currentPage = 1;
   pageSize = 20;
 
   constructor(
     private databaseService: DatabaseService,
+    private auth: Auth,
     private toastService: ToastService,
     private cdr: ChangeDetectorRef,
     private router: Router,
@@ -40,29 +44,27 @@ export class GlobalAlertsComponent implements OnInit {
   }
 
   get userName(): string {
-    try {
-      const token = localStorage.getItem('token');
-      if (!token) return 'there';
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const sub: string = payload.sub || '';
-      const name = sub.includes('@') ? sub.split('@')[0] : sub;
-      return name ? name.charAt(0).toUpperCase() + name.slice(1) : 'there';
-    } catch {
-      return 'there';
-    }
+    return this.auth.getUserName();
   }
 
   get initials(): string {
-    const n = this.userName;
-    return (n.charAt(0) || 'U').toUpperCase();
+    return this.auth.getInitials();
   }
 
-  get criticalCount(): number {
-    return this.allAlerts.filter((a) => a.severity === 'CRITICAL').length;
+  get dashboardLink(): string {
+    return this.auth.getRole() === 'ADMIN' ? '/admin-dashboard' : '/user-dashboard';
   }
 
-  get highCount(): number {
-    return this.allAlerts.filter((a) => a.severity === 'HIGH').length;
+  goToDashboard(): void {
+    this.router.navigate([this.dashboardLink]);
+  }
+
+  get activeCount(): number {
+    return this.allAlerts.filter((a) => !a.resolved).length;
+  }
+
+  get resolvedCount(): number {
+    return this.allAlerts.filter((a) => a.resolved).length;
   }
 
   get totalCount(): number {
@@ -112,6 +114,12 @@ export class GlobalAlertsComponent implements OnInit {
       filtered = filtered.filter((a) => a.alertType === this.alertTypeFilter);
     }
 
+    if (this.statusFilter === 'ACTIVE') {
+      filtered = filtered.filter((a) => !a.resolved);
+    } else if (this.statusFilter === 'RESOLVED') {
+      filtered = filtered.filter((a) => a.resolved);
+    }
+
     if (this.searchTerm) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -143,6 +151,11 @@ export class GlobalAlertsComponent implements OnInit {
     this.applyFilters();
   }
 
+  onStatusChange(status: string): void {
+    this.statusFilter = status;
+    this.applyFilters();
+  }
+
   onAlertTypeChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
     this.alertTypeFilter = value;
@@ -168,8 +181,7 @@ export class GlobalAlertsComponent implements OnInit {
   }
 
   logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    this.auth.logout();
     this.router.navigate(['/']);
   }
 }
