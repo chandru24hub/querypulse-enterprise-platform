@@ -25,4 +25,8 @@ public class DatabaseAlertResponse {
 
     private String createdAt;
 
+    private boolean resolved;
+
+    private String resolvedAt;
+
 }

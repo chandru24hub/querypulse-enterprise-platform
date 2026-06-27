@@ -24,6 +24,9 @@ public class QueryOptimizationService {
     @Value("${anthropic.api.url:https://api.anthropic.com/v1/messages}")
     private String anthropicApiUrl;
 
+    @Value("${anthropic.api.model:claude-sonnet-4-6}")
+    private String anthropicModel;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String getQueryOptimizationSuggestions(String sqlQuery) {
@@ -41,7 +44,7 @@ public class QueryOptimizationService {
             );
 
             Map<String, Object> requestBody = new HashMap<>();
-            requestBody.put("model", "claude-3-5-sonnet-20241022");
+            requestBody.put("model", anthropicModel);
             requestBody.put("max_tokens", 500);
             requestBody.put("messages", new Object[]{
                     new HashMap<String, String>() {{

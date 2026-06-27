@@ -59,6 +59,18 @@ public class DatabaseController {
                 .getAllDatabases();
     }
 
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteDatabase(
+
+            @PathVariable
+            UUID id
+    ) {
+
+        databaseService.deleteDatabase(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
     @PostMapping("/{id}/test-connection")
 public ConnectionTestResponse testConnection(
 

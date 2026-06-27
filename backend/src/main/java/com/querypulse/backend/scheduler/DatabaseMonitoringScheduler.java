@@ -10,16 +10,22 @@ import com.querypulse.backend.service.DatabaseService;
 import com.querypulse.backend.service.EmailService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DatabaseMonitoringScheduler {
+
+    private static final int CONNECTION_THRESHOLD = 50;
+    private static final int TABLE_COUNT_THRESHOLD = 1000;
 
     private final MonitoredDatabaseRepository
             monitoredDatabaseRepository;
@@ -39,9 +45,7 @@ public class DatabaseMonitoringScheduler {
     @Scheduled(fixedRate = 300000)
     public void monitorDatabases() {
 
-        System.out.println(
-                "Running automatic database monitoring..."
-        );
+        log.info("Running automatic database monitoring...");
 
         List<MonitoredDatabase> databases =
                 monitoredDatabaseRepository.findAll();
@@ -50,240 +54,141 @@ public class DatabaseMonitoringScheduler {
 
             try {
 
-                //----------------------------------------
-                // Refresh Metrics
-                //----------------------------------------
+                // Refresh live metrics + status (never throws — sets FAILED
+                // on the entity if the database is unreachable) and persist a
+                // history data point.
+                databaseService.refreshDatabaseMetrics(database.getId());
+                databaseService.saveHealthHistory(database.getId());
 
-                databaseService.refreshDatabaseMetrics(
-                        database.getId()
-                );
-
-                //----------------------------------------
-                // Save History
-                //----------------------------------------
-
-                databaseService.saveHealthHistory(
-                        database.getId()
-                );
-
-                //----------------------------------------
-                // Reload latest database state
-                //----------------------------------------
-
-                MonitoredDatabase updatedDatabase =
+                MonitoredDatabase db =
                         monitoredDatabaseRepository
-                                .findById(
-                                        database.getId()
-                                )
+                                .findById(database.getId())
                                 .orElseThrow();
 
-                //----------------------------------------
-                // DATABASE DOWN ALERT
-                //----------------------------------------
+                boolean isDown =
+                        "FAILED".equalsIgnoreCase(db.getConnectionStatus());
 
-                if (
-                        "FAILED".equalsIgnoreCase(
-                                updatedDatabase.getConnectionStatus()
-                        )
-                ) {
+                // DATABASE DOWN
+                evaluateAlert(
+                        db,
+                        "DATABASE_DOWN",
+                        "HIGH",
+                        isDown,
+                        "Database " + db.getDisplayName() + " is DOWN"
+                );
 
-                    DatabaseAlert alert =
-                            DatabaseAlert
-                                    .builder()
+                // HIGH CONNECTIONS (only meaningful while reachable)
+                boolean highConnections =
+                        !isDown
+                                && db.getActiveConnections() != null
+                                && db.getActiveConnections() > CONNECTION_THRESHOLD;
+                evaluateAlert(
+                        db,
+                        "HIGH_CONNECTIONS",
+                        "MEDIUM",
+                        highConnections,
+                        "Active connections exceeded threshold. Current connections = "
+                                + db.getActiveConnections()
+                );
 
-                                    .databaseId(
-                                            updatedDatabase.getId()
-                                    )
-
-                                    .alertType(
-                                            "DATABASE_DOWN"
-                                    )
-
-                                    .severity(
-                                            "HIGH"
-                                    )
-
-                                    .message(
-                                            "Database "
-                                                    +
-                                                    updatedDatabase.getDisplayName()
-                                                    +
-                                                    " is DOWN"
-                                    )
-
-                                    .createdAt(
-                                            LocalDateTime.now()
-                                    )
-
-                                    .build();
-
-                    createAndSendAlert(alert);
-
-                }
-
-                //----------------------------------------
-                // HIGH CONNECTION ALERT
-                //----------------------------------------
-
-                if (
-                        updatedDatabase.getActiveConnections() != null
-                                &&
-                                updatedDatabase.getActiveConnections() > 50
-                ) {
-
-                    DatabaseAlert alert =
-                            DatabaseAlert
-                                    .builder()
-
-                                    .databaseId(
-                                            updatedDatabase.getId()
-                                    )
-
-                                    .alertType(
-                                            "HIGH_CONNECTIONS"
-                                    )
-
-                                    .severity(
-                                            "MEDIUM"
-                                    )
-
-                                    .message(
-                                            "Active connections exceeded threshold. Current connections = "
-                                                    +
-                                                    updatedDatabase.getActiveConnections()
-                                    )
-
-                                    .createdAt(
-                                            LocalDateTime.now()
-                                    )
-
-                                    .build();
-
-                    createAndSendAlert(alert);
-
-                }
-
-                //----------------------------------------
-                // TOO MANY TABLES ALERT
-                //----------------------------------------
-
-                if (
-                        updatedDatabase.getTableCount() != null
-                                &&
-                                updatedDatabase.getTableCount() > 1000
-                ) {
-
-                    DatabaseAlert alert =
-                            DatabaseAlert
-                                    .builder()
-
-                                    .databaseId(
-                                            updatedDatabase.getId()
-                                    )
-
-                                    .alertType(
-                                            "HIGH_TABLE_COUNT"
-                                    )
-
-                                    .severity(
-                                            "LOW"
-                                    )
-
-                                    .message(
-                                            "Table count exceeded threshold. Current count = "
-                                                    +
-                                                    updatedDatabase.getTableCount()
-                                    )
-
-                                    .createdAt(
-                                            LocalDateTime.now()
-                                    )
-
-                                    .build();
-
-                    createAndSendAlert(alert);
-
-                }
+                // TOO MANY TABLES (only meaningful while reachable)
+                boolean highTableCount =
+                        !isDown
+                                && db.getTableCount() != null
+                                && db.getTableCount() > TABLE_COUNT_THRESHOLD;
+                evaluateAlert(
+                        db,
+                        "HIGH_TABLE_COUNT",
+                        "LOW",
+                        highTableCount,
+                        "Table count exceeded threshold. Current count = "
+                                + db.getTableCount()
+                );
 
             } catch (Exception ex) {
 
-    System.out.println(
-
-            "Monitoring failed for "
-
-                    +
-
-                    database.getDisplayName()
-
-                    +
-
-                    " : "
-
-                    +
-
-                    ex.getMessage()
-
-    );
-
-    DatabaseAlert alert =
-            DatabaseAlert
-                    .builder()
-
-                    .databaseId(
-                            database.getId()
-                    )
-
-                    .alertType(
-                            "DATABASE_DOWN"
-                    )
-
-                    .severity(
-                            "HIGH"
-                    )
-
-                    .message(
-                            "Database "
-                                    +
-                                    database.getDisplayName()
-                                    +
-                                    " is DOWN"
-                    )
-
-                    .createdAt(
-                            LocalDateTime.now()
-                    )
-
-                    .build();
-
-    createAndSendAlert(alert);
-
-}
-
-        }
-
-    }
-
-    private void createAndSendAlert(DatabaseAlert alert) {
-        databaseAlertRepository.save(alert);
-
-        List<User> activeUsers = userRepository.findAll();
-
-        MonitoredDatabase database = monitoredDatabaseRepository
-                .findById(alert.getDatabaseId())
-                .orElse(null);
-        String databaseName = database != null ? database.getDisplayName() : "Unknown";
-
-        for (User user : activeUsers) {
-            if (user.getEmail() != null && user.getIsActive()) {
-                emailService.sendAlertEmail(
-                        user.getEmail(),
-                        alert.getAlertType(),
-                        databaseName,
-                        alert.getSeverity(),
-                        alert.getMessage()
-                );
+                log.error("Monitoring failed for {} : {}",
+                        database.getDisplayName(), ex.getMessage(), ex);
             }
         }
+    }
+
+    /**
+     * Opens a new alert (and notifies users) the first time a condition is
+     * met, and resolves the open alert once the condition clears. This makes
+     * alerts idempotent across monitoring cycles — no duplicate rows and no
+     * repeated email spam while a problem persists.
+     */
+    private void evaluateAlert(
+            MonitoredDatabase database,
+            String alertType,
+            String severity,
+            boolean conditionMet,
+            String message
+    ) {
+
+        Optional<DatabaseAlert> openAlert =
+                databaseAlertRepository
+                        .findFirstByDatabaseIdAndAlertTypeAndResolvedFalse(
+                                database.getId(), alertType);
+
+        if (conditionMet) {
+
+            if (openAlert.isEmpty()) {
+
+                DatabaseAlert alert = DatabaseAlert.builder()
+                        .databaseId(database.getId())
+                        .alertType(alertType)
+                        .severity(severity)
+                        .message(message)
+                        .createdAt(LocalDateTime.now())
+                        .resolved(false)
+                        .build();
+
+                databaseAlertRepository.save(alert);
+                notifyUsers(alert, database.getDisplayName());
+            }
+            // else: alert already open — do nothing (dedup, no re-email).
+
+        } else if (openAlert.isPresent()) {
+
+            DatabaseAlert alert = openAlert.get();
+            alert.setResolved(true);
+            alert.setResolvedAt(LocalDateTime.now());
+            databaseAlertRepository.save(alert);
+            log.info("Resolved {} alert for {}", alertType, database.getDisplayName());
+            notifyRecovery(alert, database.getDisplayName());
+        }
+    }
+
+    private void notifyUsers(DatabaseAlert alert, String databaseName) {
+
+        for (User user : activeRecipients()) {
+            emailService.sendAlertEmail(
+                    user.getEmail(),
+                    alert.getAlertType(),
+                    databaseName,
+                    alert.getSeverity(),
+                    alert.getMessage()
+            );
+        }
+    }
+
+    private void notifyRecovery(DatabaseAlert alert, String databaseName) {
+
+        for (User user : activeRecipients()) {
+            emailService.sendRecoveryEmail(
+                    user.getEmail(),
+                    alert.getAlertType(),
+                    databaseName
+            );
+        }
+    }
+
+    private List<User> activeRecipients() {
+        return userRepository.findAll().stream()
+                .filter(u -> u.getEmail() != null && Boolean.TRUE.equals(u.getIsActive()))
+                .toList();
     }
 
 }

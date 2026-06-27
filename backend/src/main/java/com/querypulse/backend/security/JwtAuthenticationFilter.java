@@ -51,10 +51,15 @@ public class JwtAuthenticationFilter
 
         jwtToken = authHeader.substring(7);
 
-        userEmail = jwtService.extractUsername(jwtToken);
+        String role;
 
-        String role =
-        jwtService.extractRole(jwtToken);
+        try {
+            userEmail = jwtService.extractUsername(jwtToken);
+            role = jwtService.extractRole(jwtToken);
+        } catch (Exception ex) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         if (userEmail != null &&
                 SecurityContextHolder

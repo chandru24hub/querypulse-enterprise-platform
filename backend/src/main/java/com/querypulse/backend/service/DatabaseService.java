@@ -26,6 +26,8 @@ public interface DatabaseService {
 
     List<DatabaseResponse> getAllDatabases();
 
+    void deleteDatabase(UUID databaseId);
+
     ConnectionTestResponse testConnection(
             UUID databaseId
     );

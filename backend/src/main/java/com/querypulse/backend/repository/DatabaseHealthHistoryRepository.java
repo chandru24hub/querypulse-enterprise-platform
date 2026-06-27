@@ -16,4 +16,6 @@ findByDatabaseIdOrderByRecordedAtAsc(
         UUID databaseId
 );
 
+void deleteByDatabaseId(UUID databaseId);
+
 }

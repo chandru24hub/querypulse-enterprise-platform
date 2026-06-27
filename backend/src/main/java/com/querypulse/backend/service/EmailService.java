@@ -37,6 +37,39 @@ public class EmailService {
         }
     }
 
+    public void sendRecoveryEmail(
+            String toEmail,
+            String alertType,
+            String databaseName
+    ) {
+        try {
+            SimpleMailMessage mail = new SimpleMailMessage();
+            mail.setTo(toEmail);
+            mail.setSubject("[QueryPulse] RESOLVED: " + alertType + " - " + databaseName);
+
+            String body = String.format(
+                    "Hello,\n\n" +
+                            "Good news — a previously reported issue in QueryPulse has cleared.\n\n" +
+                            "Recovery Details:\n" +
+                            "  Database: %s\n" +
+                            "  Alert Type: %s\n" +
+                            "  Status: RESOLVED\n\n" +
+                            "No further action is required.\n\n" +
+                            "Best regards,\n" +
+                            "QueryPulse Team",
+                    databaseName,
+                    alertType
+            );
+            mail.setText(body);
+            mail.setFrom("noreply@querypulse.local");
+
+            mailSender.send(mail);
+            log.info("Recovery email sent to {} for database: {}", toEmail, databaseName);
+        } catch (Exception ex) {
+            log.error("Failed to send recovery email to {}", toEmail, ex);
+        }
+    }
+
     public void sendApprovalEmail(
             String toEmail,
             String username,

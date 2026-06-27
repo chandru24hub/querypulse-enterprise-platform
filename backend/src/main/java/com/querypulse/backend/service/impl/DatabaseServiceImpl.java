@@ -112,6 +112,19 @@ implements DatabaseService {
     }
 
     @Override
+    public void deleteDatabase(UUID databaseId) {
+
+        if (!monitoredDatabaseRepository.existsById(databaseId)) {
+            throw new com.querypulse.backend.exception.DatabaseNotFoundException(
+                    "Database not found");
+        }
+
+        databaseAlertRepository.deleteByDatabaseId(databaseId);
+        databaseHealthHistoryRepository.deleteByDatabaseId(databaseId);
+        monitoredDatabaseRepository.deleteById(databaseId);
+    }
+
+    @Override
     public List<DatabaseResponse>
     getAllDatabases() {
 
@@ -282,165 +295,93 @@ public DatabaseHealthResponse getDatabaseHealth(
                             )
                     );
 
-    try {
+    String password =
+            aesEncryptionService.decrypt(
+                    database.getPassword()
+            );
 
-        String password =
-                aesEncryptionService.decrypt(
-                        database.getPassword()
-                );
+    String jdbcUrl =
+            "jdbc:postgresql://"
+                    + database.getHost()
+                    + ":"
+                    + database.getPort()
+                    + "/"
+                    + database.getDatabaseName();
 
-        String jdbcUrl =
-                "jdbc:postgresql://"
-                        + database.getHost()
-                        + ":"
-                        + database.getPort()
-                        + "/"
-                        + database.getDatabaseName();
+    // try-with-resources guarantees the connection (and every statement/
+    // result set) is closed even when a query fails part-way through.
+    try (Connection connection =
+                 DriverManager.getConnection(
+                         jdbcUrl,
+                         database.getUsername(),
+                         password
+                 )) {
 
-        Connection connection =
-                DriverManager.getConnection(
-                        jdbcUrl,
-                        database.getUsername(),
-                        password
-                );
+        String version = querySingleString(
+                connection, "SELECT version()", "Unknown");
 
-        String version = "Unknown";
+        String size = querySingleString(
+                connection,
+                "SELECT pg_size_pretty(pg_database_size(current_database()))",
+                "Unknown");
 
-        Statement versionStatement =
-                connection.createStatement();
+        Integer activeConnections = querySingleInt(
+                connection,
+                "SELECT count(*) FROM pg_stat_activity WHERE state='active'");
 
-        ResultSet versionResult =
-                versionStatement.executeQuery(
-                        "SELECT version()"
-                );
+        String uptime = querySingleString(
+                connection,
+                "SELECT now() - pg_postmaster_start_time()",
+                "-");
 
-        if (versionResult.next()) {
-
-            version =
-                    versionResult.getString(1);
-        }
-
-        String size = "Unknown";
-
-        Statement sizeStatement =
-                connection.createStatement();
-
-        ResultSet sizeResult =
-                sizeStatement.executeQuery(
-                        """
-                        SELECT pg_size_pretty(
-                        pg_database_size(
-                        current_database()))
-                        """
-                );
-
-        if (sizeResult.next()) {
-
-            size =
-                    sizeResult.getString(1);
-        }
-
-        Integer activeConnections = 0;
-
-        Statement connectionStatement =
-                connection.createStatement();
-
-        ResultSet connectionResult =
-                connectionStatement.executeQuery(
-                        """
-                        SELECT count(*)
-                        FROM pg_stat_activity
-                        WHERE state='active'
-                        """
-                );
-
-        if (connectionResult.next()) {
-
-            activeConnections =
-                    connectionResult.getInt(1);
-        }
-
-        String uptime = "-";
-
-        Statement uptimeStatement =
-                connection.createStatement();
-
-        ResultSet uptimeResult =
-                uptimeStatement.executeQuery(
-                        """
-                        SELECT now() - pg_postmaster_start_time()
-                        """
-                );
-
-        if (uptimeResult.next()) {
-
-            uptime =
-                    uptimeResult.getString(1);
-        }
-
-        Integer tableCount = 0;
-
-        Statement tableStatement =
-                connection.createStatement();
-
-        ResultSet tableResult =
-                tableStatement.executeQuery(
-                        """
-                        SELECT count(*)
-                        FROM information_schema.tables
-                        WHERE table_schema='public'
-                        """
-                );
-
-        if (tableResult.next()) {
-
-            tableCount =
-                    tableResult.getInt(1);
-        }
-
-        versionResult.close();
-        versionStatement.close();
-
-        sizeResult.close();
-        sizeStatement.close();
-
-        connectionResult.close();
-        connectionStatement.close();
-
-        uptimeResult.close();
-        uptimeStatement.close();
-
-        tableResult.close();
-        tableStatement.close();
-
-        connection.close();
+        Integer tableCount = querySingleInt(
+                connection,
+                "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'");
 
         return new DatabaseHealthResponse(
-
                 version,
-
                 size,
-
                 activeConnections,
-
-                database.getConnectionStatus(),
-
-                database.getLastCheckedAt() != null
-                        ? database.getLastCheckedAt().toString()
-                        : "-",
-
+                // The connection just succeeded, so the live status is CONNECTED.
+                "CONNECTED",
+                LocalDateTime.now().toString(),
                 uptime,
-
                 tableCount
         );
 
     } catch (Exception ex) {
 
-        ex.printStackTrace();
-
         throw new RuntimeException(
-                ex.getMessage()
+                "Unable to reach database: " + ex.getMessage(),
+                ex
         );
+    }
+}
+
+/** Runs a query expected to return a single string column. */
+private String querySingleString(
+        Connection connection,
+        String sql,
+        String defaultValue
+) throws java.sql.SQLException {
+
+    try (Statement statement = connection.createStatement();
+         ResultSet rs = statement.executeQuery(sql)) {
+
+        return rs.next() ? rs.getString(1) : defaultValue;
+    }
+}
+
+/** Runs a query expected to return a single integer column. */
+private Integer querySingleInt(
+        Connection connection,
+        String sql
+) throws java.sql.SQLException {
+
+    try (Statement statement = connection.createStatement();
+         ResultSet rs = statement.executeQuery(sql)) {
+
+        return rs.next() ? rs.getInt(1) : 0;
     }
 }
 
@@ -448,11 +389,6 @@ public DatabaseHealthResponse getDatabaseHealth(
 public void refreshDatabaseMetrics(
         UUID databaseId
 ) {
-
-    DatabaseHealthResponse health =
-            getDatabaseHealth(
-                    databaseId
-            );
 
     MonitoredDatabase database =
             monitoredDatabaseRepository
@@ -463,29 +399,31 @@ public void refreshDatabaseMetrics(
                             )
                     );
 
-    database.setActiveConnections(
-            health.getActiveConnections()
-    );
+    try {
 
-    database.setDatabaseSize(
-            health.getDatabaseSize()
-    );
+        DatabaseHealthResponse health =
+                getDatabaseHealth(databaseId);
 
-    database.setDatabaseUptime(
-            health.getDatabaseUptime()
-    );
+        database.setActiveConnections(
+                health.getActiveConnections());
+        database.setDatabaseSize(
+                health.getDatabaseSize());
+        database.setDatabaseUptime(
+                health.getDatabaseUptime());
+        database.setTableCount(
+                health.getTableCount());
+        database.setConnectionStatus("CONNECTED");
 
-    database.setTableCount(
-            health.getTableCount()
-    );
+    } catch (Exception ex) {
 
-    database.setLastCheckedAt(
-            LocalDateTime.now()
-    );
+        // The database is unreachable — record that the live status is
+        // FAILED instead of leaving the previous (stale) status in place.
+        database.setConnectionStatus("FAILED");
+    }
 
-    monitoredDatabaseRepository.save(
-            database
-    );
+    database.setLastCheckedAt(LocalDateTime.now());
+
+    monitoredDatabaseRepository.save(database);
 }
 
 @Override
@@ -493,49 +431,32 @@ public void saveHealthHistory(
         UUID databaseId
 ) {
 
-    DatabaseHealthResponse health =
-            getDatabaseHealth(
-                    databaseId
-            );
-
-    DatabaseHealthHistory history =
+    DatabaseHealthHistory.DatabaseHealthHistoryBuilder history =
             DatabaseHealthHistory
                     .builder()
+                    .databaseId(databaseId)
+                    .recordedAt(LocalDateTime.now());
 
-                    .databaseId(
-                            databaseId
-                    )
+    try {
 
-                    .recordedAt(
-                            LocalDateTime.now()
-                    )
+        DatabaseHealthResponse health =
+                getDatabaseHealth(databaseId);
 
-                    .connectionStatus(
-                            health.getConnectionStatus()
-                    )
+        history.connectionStatus("CONNECTED")
+                .activeConnections(health.getActiveConnections())
+                .databaseSize(health.getDatabaseSize())
+                .databaseUptime(health.getDatabaseUptime())
+                .tableCount(health.getTableCount());
 
-                    .activeConnections(
-                            health.getActiveConnections()
-                    )
+    } catch (Exception ex) {
 
-                    .databaseSize(
-                            health.getDatabaseSize()
-                    )
+        // Still record a data point so history/charts show the outage
+        // rather than a gap.
+        history.connectionStatus("FAILED")
+                .activeConnections(0);
+    }
 
-                    .databaseUptime(
-                            health.getDatabaseUptime()
-                    )
-
-                    .tableCount(
-                            health.getTableCount()
-                    )
-
-                    .build();
-
-    databaseHealthHistoryRepository
-            .save(
-                    history
-            );
+    databaseHealthHistoryRepository.save(history.build());
 }
 
 @Override
@@ -849,6 +770,16 @@ getAlerts(
                                                     .toString()
                                     )
 
+                                    .resolved(
+                                            Boolean.TRUE.equals(alert.getResolved())
+                                    )
+
+                                    .resolvedAt(
+                                            alert.getResolvedAt() != null
+                                                    ? alert.getResolvedAt().toString()
+                                                    : null
+                                    )
+
                                     .build()
 
             )
@@ -881,6 +812,10 @@ public List<DatabaseAlertResponse> getAllAlerts() {
                             .alertType(alert.getAlertType())
                             .message(alert.getMessage())
                             .createdAt(alert.getCreatedAt().toString())
+                            .resolved(Boolean.TRUE.equals(alert.getResolved()))
+                            .resolvedAt(alert.getResolvedAt() != null
+                                    ? alert.getResolvedAt().toString()
+                                    : null)
                             .build()
             )
             .toList();
